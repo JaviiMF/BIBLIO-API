@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+
+<body>
+    <nav th:fragment="navbar" class="bg-gray-800 p-4">
+        <div class="w-full flex justify-between items-center px-4">
+            <a th:href="@{/home}" class="flex items-center text-white text-xl font-bold">
+                <img th:src="@{/img/logo.png}" alt="Biblio API Logo" class="h-12 mr-3" />
+                Biblio API
+            </a>
+        </div>
+    </nav>
+</body>
+
+</html>

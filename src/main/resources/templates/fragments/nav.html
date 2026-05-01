@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+
+<body>
+    <nav th:fragment="navbar" class="bg-gray-800 p-4">
+        <div class="w-full flex justify-between items-center px-4">
+            <a th:href="@{/home}" class="flex items-center text-white text-xl font-bold">
+                <img th:src="@{/img/logo.png}" alt="Biblio API Logo" class="h-12 mr-3" />
+                Biblio API
+            </a>
+
+            <div class="flex items-center space-x-4">
+                <a th:href="@{/search}"
+                    class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Búsqueda SPARQL</a>
+                <a th:href="@{/comparative}"
+                    class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Análisis de Calidad
+                    de Enlazado</a>
+                <a th:href="@{/federated}"
+                    class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Búsqueda
+                    Federada</a>
+                <a th:href="@{/about}"
+                    class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Acerca de
+                </a>
+
+                <div class="relative ml-3">
+                    <button type="button" id="user-menu-button"
+                        class="flex items-center bg-gray-700 text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+                        <span th:text="${#authentication.name}"></span>
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div id="user-menu-dropdown"
+                        class="hidden absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+
+                        <a th:href="@{/mis-busquedas}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            Mis Búsquedas
+                        </a>
+
+                        <div class="border-t border-gray-100"></div>
+
+                        <a th:href="@{/logout}"
+                            class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium">
+                            Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const btn = document.getElementById('user-menu-button');
+                const menu = document.getElementById('user-menu-dropdown');
+
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    menu.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!btn.contains(e.target) && !menu.contains(e.target)) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            });
+        </script>
+    </nav>
+</body>
+
+</html>

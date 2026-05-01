@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio - Biblio API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #4f46e5, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-hover {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .bg-hero {
+            background: linear-gradient(135deg, #f0f4ff 0%, #f0fdfa 100%);
+        }
+
+        /* ── Pipeline diagram ── */
+        .pipeline-wrapper {
+            position: relative;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+
+        .pipeline {
+            display: flex;
+            align-items: flex-end;
+            gap: 0;
+            min-width: 680px;
+        }
+
+        .pipeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .pipeline-annotation {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            min-height: 2.5rem;
+            padding: 0 0.25rem;
+            line-height: 1.35;
+            font-weight: 500;
+        }
+
+        .pipeline-box {
+            background: #93c5fd;
+            color: #1e3a5f;
+            border-radius: 0.75rem;
+            padding: 1.1rem 0.6rem;
+            width: 100%;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.82rem;
+            line-height: 1.4;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+            transition: background 0.2s, transform 0.2s;
+            min-height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pipeline-box:hover {
+            background: #60a5fa;
+            transform: translateY(-2px);
+        }
+
+        .pipeline-arrow {
+            display: flex;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            /* aligns arrow with box centre */
+            margin-bottom: 0.1rem;
+        }
+
+        .pipeline-arrow svg {
+            color: #3b82f6;
+            flex-shrink: 0;
+        }
+
+        .pipeline-bar {
+            background: linear-gradient(to right, #64748b, #475569);
+            color: #f1f5f9;
+            border-radius: 0.5rem;
+            text-align: center;
+            padding: 0.65rem 1rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            margin-top: 1rem;
+        }
+
+        /* ── Architecture diagram ── */
+        .arch-layer {
+            margin-bottom: 0;
+        }
+
+        .arch-layer-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .arch-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0.6rem 0.8rem;
+            border-radius: 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            min-width: 90px;
+            gap: 0.25rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .arch-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+        }
+
+        .arch-node i {
+            font-size: 1rem;
+        }
+
+        .arch-inner-node {
+            padding: 0.35rem 0.6rem;
+            border-radius: 0.4rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .arch-repo-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 2px solid;
+            border-radius: 0.6rem;
+            padding: 0.6rem 0.4rem;
+            gap: 0.15rem;
+            font-size: 0.72rem;
+            transition: transform 0.15s;
+        }
+
+        .arch-repo-node:hover {
+            transform: scale(1.04);
+        }
+
+        .arch-repo-node i {
+            font-size: 1.1rem;
+        }
+
+        .arch-arrow-down {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.2rem 0;
+            gap: 0.1rem;
+        }
+
+        .arch-arrow-line {
+            width: 2px;
+            height: 22px;
+            background: #6366f1;
+        }
+
+        .arch-arrow-label {
+            font-size: 0.62rem;
+            color: #6366f1;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .arch-arrow-head {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #6366f1;
+        }
+
+        .arch-output-chip {
+            display: inline-flex;
+            align-items: center;
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.68rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <div th:replace="~{fragments/nav :: navbar}"></div>
+
+    <!-- HERO -->
+    <div class="bg-hero py-16 px-4 text-center border-b border-gray-100">
+        <div class="max-w-3xl mx-auto">
+            <p class="text-indigo-500 font-semibold text-sm uppercase tracking-widest mb-3">
+                <i class="fas fa-book-open mr-2"></i>Trabajo de Fin de Grado
+            </p>
+            <h1 class="text-5xl font-bold mb-5 tracking-tight">
+                <span class="gradient-text">Biblio-API</span>
+            </h1>
+            <p class="text-gray-600 text-xl mb-8 leading-relaxed">
+                Punto de acceso unificado a los distintos repositorios bibliográficos.
+                Busca, compara y analiza información sobre autores y obras sin necesitar
+                conocimientos técnicos de SPARQL o grafos de conocimiento.
+            </p>
+
+            <!-- Repositorios chips -->
+            <div class="flex flex-wrap justify-center gap-3 mb-8">
+                <span
+                    class="inline-flex items-center gap-1.5 bg-white border border-blue-200 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium shadow-sm">
+                    <i class="fas fa-globe"></i> Wikidata
+                </span>
+                <span
+                    class="inline-flex items-center gap-1.5 bg-white border border-yellow-200 text-yellow-700 px-4 py-1.5 rounded-full text-sm font-medium shadow-sm">
+                    <i class="fas fa-book"></i> BNE (Biblioteca Nacional de España)
+                </span>
+                <span
+                    class="inline-flex items-center gap-1.5 bg-white border border-purple-200 text-purple-700 px-4 py-1.5 rounded-full text-sm font-medium shadow-sm">
+                    <i class="fas fa-flag"></i> BNF (Bibliothèque nationale de France)
+                </span>
+                <span
+                    class="inline-flex items-center gap-1.5 bg-white border border-green-200 text-green-700 px-4 py-1.5 rounded-full text-sm font-medium shadow-sm">
+                    <i class="fas fa-scroll"></i> BVMC (Biblioteca Virtual Miguel de Cervantes)
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- FUNCIONALIDADES -->
+    <div class="container mx-auto mt-12 px-6 pb-20">
+        <h2 class="text-center text-sm font-bold text-gray-400 uppercase tracking-widest mb-8">
+            ¿Qué puedes hacer con Biblio-API?
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+
+            <!-- Card 1: Búsqueda por tema -->
+            <a th:href="@{/search}"
+                class="block card-hover bg-white rounded-xl shadow border border-indigo-100 p-7 group">
+                <div
+                    class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-indigo-200 transition-colors">
+                    <i class="fas fa-search text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Búsqueda por Tema</h3>
+                <p class="text-gray-500 text-sm leading-relaxed mb-4">
+                    Introduce cualquier término (autor, obra, lugar...) y obtén resultados de Wikidata, BNE, BNF o la
+                    BVMC. Visualiza los datos como tarjetas, grafo, mapa o tabla.
+                </p>
+                <div
+                    class="text-indigo-600 text-sm font-semibold flex items-center gap-1.5 group-hover:gap-3 transition-all">
+                    Ir a búsqueda <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <!-- Card 2: Búsqueda federada -->
+            <a th:href="@{/federated}"
+                class="block card-hover bg-white rounded-xl shadow border border-cyan-100 p-7 group">
+                <div
+                    class="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-cyan-200 transition-colors">
+                    <i class="fas fa-network-wired text-cyan-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Búsqueda Federada</h3>
+                <p class="text-gray-500 text-sm leading-relaxed mb-4">
+                    Introduce el identificador Wikidata de un autor (ej. <code
+                        class="bg-gray-100 px-1 rounded text-xs">Q5557</code>) y recupera su catálogo completo
+                    directamente desde la BNE, BNF o BVMC.
+                </p>
+                <div
+                    class="text-cyan-600 text-sm font-semibold flex items-center gap-1.5 group-hover:gap-3 transition-all">
+                    Ir a búsqueda federada <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <!-- Card 3: Análisis de calidad -->
+            <a th:href="@{/comparative}"
+                class="block card-hover bg-white rounded-xl shadow border border-teal-100 p-7 group">
+                <div
+                    class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-teal-200 transition-colors">
+                    <i class="fas fa-chart-bar text-teal-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Análisis de Calidad</h3>
+                <p class="text-gray-500 text-sm leading-relaxed mb-4">
+                    Evalúa cuántos autores de un periodo literario (Siglo de Oro, Edad de Plata, Guerra Civil) tienen
+                    sus datos enlazados entre Wikidata y los repositorios.
+                </p>
+                <div
+                    class="text-teal-600 text-sm font-semibold flex items-center gap-1.5 group-hover:gap-3 transition-all">
+                    Ir al análisis <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- ===== ARQUITECTURA ===== -->
+        <div class="mt-16 max-w-5xl mx-auto">
+            <h2 class="text-center text-sm font-bold text-gray-400 uppercase tracking-widest mb-2">
+                Arquitectura del sistema
+            </h2>
+            <p class="text-center text-xs text-gray-400 mb-8">Cómo se interconectan los distintos elementos</p>
+
+            <!-- CAPA 1: USUARIO -->
+            <div class="arch-layer arch-layer-user rounded-xl p-4 mb-0 border border-indigo-200 bg-indigo-50">
+                <div class="arch-layer-label" style="color:#4338ca;">
+                    <i class="fas fa-user mr-2"></i>CAPA DE USUARIO
+                </div>
+                <div class="flex flex-wrap justify-center gap-4 mt-3">
+                    <div class="arch-node bg-indigo-600 text-white">
+                        <i class="fas fa-sign-in-alt mb-1"></i>
+                        <span>Login /<br>Registro</span>
+                    </div>
+                    <div class="arch-node bg-indigo-500 text-white">
+                        <i class="fas fa-search mb-1"></i>
+                        <span>Búsqueda<br>General</span>
+                    </div>
+                    <div class="arch-node bg-indigo-500 text-white">
+                        <i class="fas fa-network-wired mb-1"></i>
+                        <span>Búsqueda<br>Federada</span>
+                    </div>
+                    <div class="arch-node bg-indigo-500 text-white">
+                        <i class="fas fa-chart-bar mb-1"></i>
+                        <span>Análisis de<br>Calidad</span>
+                    </div>
+                    <div class="arch-node bg-indigo-400 text-white">
+                        <i class="fas fa-history mb-1"></i>
+                        <span>Log de<br>Consultas</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FLECHA USUARIO → APP -->
+            <div class="arch-arrow-down">
+                <div class="arch-arrow-line"></div>
+                <div class="arch-arrow-label">HTTP · Thymeleaf</div>
+                <div class="arch-arrow-head"></div>
+            </div>
+
+            <!-- CAPA 2: APLICACIÓN (Spring Boot) -->
+            <div class="arch-layer rounded-xl p-4 mb-0 border border-violet-200 bg-violet-50">
+                <div class="arch-layer-label" style="color:#6d28d9;">
+                    <i class="fas fa-leaf mr-2"></i>CAPA DE APLICACIÓN — Spring Boot 3.4 · Java 21
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+                    <!-- Controladores -->
+                    <div class="bg-white rounded-lg border border-violet-200 p-3">
+                        <p class="text-xs font-bold text-violet-600 uppercase tracking-wide mb-2">
+                            <i class="fas fa-sitemap mr-1"></i>Controladores
+                        </p>
+                        <div class="space-y-1.5">
+                            <div class="arch-inner-node bg-violet-100 text-violet-800">SearchController</div>
+                            <div class="arch-inner-node bg-violet-100 text-violet-800">BusquedaController</div>
+                            <div class="arch-inner-node bg-violet-100 text-violet-800">AuthController</div>
+                        </div>
+                    </div>
+                    <!-- Servicios -->
+                    <div class="bg-white rounded-lg border border-fuchsia-200 p-3">
+                        <p class="text-xs font-bold text-fuchsia-600 uppercase tracking-wide mb-2">
+                            <i class="fas fa-cogs mr-1"></i>Servicios
+                        </p>
+                        <div class="space-y-1.5">
+                            <div class="arch-inner-node bg-fuchsia-100 text-fuchsia-800">SparqlService</div>
+                            <div class="arch-inner-node bg-fuchsia-100 text-fuchsia-800">DataEnrichmentService</div>
+                            <div class="arch-inner-node bg-fuchsia-100 text-fuchsia-800">BusquedaService</div>
+                        </div>
+                    </div>
+                    <!-- Seguridad + Motor SPARQL -->
+                    <div class="bg-white rounded-lg border border-rose-200 p-3 col-span-2 md:col-span-1">
+                        <p class="text-xs font-bold text-rose-500 uppercase tracking-wide mb-2">
+                            <i class="fas fa-shield-alt mr-1"></i>Seguridad + Motor
+                        </p>
+                        <div class="space-y-1.5">
+                            <div class="arch-inner-node bg-rose-100 text-rose-800">Spring Security · BCrypt</div>
+                            <div class="arch-inner-node bg-orange-100 text-orange-800">
+                                <i class="fas fa-fire text-orange-500 mr-1"></i>Apache Jena ARQ
+                            </div>
+                            <div class="arch-inner-node bg-orange-50 text-orange-700">RDF · SPARQL</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FLECHAS HACIA ABAJO (dos columnas) -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="arch-arrow-down">
+                    <div class="arch-arrow-line"></div>
+                    <div class="arch-arrow-label">Consultas SPARQL<br>P950 · P268 · P2799</div>
+                    <div class="arch-arrow-head"></div>
+                </div>
+                <div class="arch-arrow-down">
+                    <div class="arch-arrow-line"></div>
+                    <div class="arch-arrow-label">JPA / Hibernate<br>registro + sesión</div>
+                    <div class="arch-arrow-head"></div>
+                </div>
+            </div>
+
+            <!-- CAPA 3: REPOSITORIOS + BASE DE DATOS (dos columnas) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <!-- Repositorios SPARQL externos -->
+                <div class="arch-layer rounded-xl p-4 border border-blue-200 bg-blue-50">
+                    <div class="arch-layer-label" style="color:#1d4ed8;">
+                        <i class="fas fa-server mr-2"></i>REPOSITORIOS SPARQL EXTERNOS
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                        <div class="arch-repo-node border-blue-400 bg-blue-100 text-blue-800">
+                            <i class="fas fa-globe text-blue-500 mb-1"></i>
+                            <span class="font-bold text-xs">Wikidata</span>
+                            <span class="text-xs opacity-70">query.wikidata.org</span>
+                        </div>
+                        <div class="arch-repo-node border-yellow-400 bg-yellow-50 text-yellow-800">
+                            <i class="fas fa-book text-yellow-600 mb-1"></i>
+                            <span class="font-bold text-xs">BNE</span>
+                            <span class="text-xs opacity-70">datos.bne.es</span>
+                        </div>
+                        <div class="arch-repo-node border-purple-400 bg-purple-50 text-purple-800">
+                            <i class="fas fa-flag text-purple-500 mb-1"></i>
+                            <span class="font-bold text-xs">BNF</span>
+                            <span class="text-xs opacity-70">data.bnf.fr</span>
+                        </div>
+                        <div class="arch-repo-node border-green-400 bg-green-50 text-green-800">
+                            <i class="fas fa-scroll text-green-600 mb-1"></i>
+                            <span class="font-bold text-xs">BVMC</span>
+                            <span class="text-xs opacity-70">cervantesvirtual.com</span>
+                        </div>
+                    </div>
+                    <!-- Badge LOD -->
+                    <div
+                        class="mt-3 bg-blue-700 text-white text-center rounded-lg py-1.5 text-xs font-semibold tracking-wide">
+                        <i class="fas fa-link mr-1"></i>RDF · Linked Open Data · SPARQL 1.1
+                    </div>
+                </div>
+
+                <!-- PostgreSQL + Salidas -->
+                <div class="flex flex-col gap-3">
+
+                    <!-- PostgreSQL -->
+                    <div class="arch-layer rounded-xl p-4 border border-sky-200 bg-sky-50 flex-1">
+                        <div class="arch-layer-label" style="color:#0369a1;">
+                            <i class="fas fa-database mr-2"></i>PERSISTENCIA — PostgreSQL
+                        </div>
+                        <div class="flex gap-2 mt-3 flex-wrap">
+                            <div class="arch-inner-node bg-sky-200 text-sky-900 flex-1">
+                                <i class="fas fa-users mr-1"></i>Usuarios
+                            </div>
+                            <div class="arch-inner-node bg-sky-200 text-sky-900 flex-1">
+                                <i class="fas fa-history mr-1"></i>Historial
+                            </div>
+                            <div class="arch-inner-node bg-sky-200 text-sky-900 flex-1">
+                                <i class="fas fa-file-code mr-1"></i>Queries
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Salidas / Visualizaciones -->
+                    <div class="arch-layer rounded-xl p-4 border border-teal-200 bg-teal-50 flex-1">
+                        <div class="arch-layer-label" style="color:#0f766e;">
+                            <i class="fas fa-eye mr-2"></i>SALIDAS — Visualización e Informes
+                        </div>
+                        <div class="flex gap-2 mt-3 flex-wrap">
+                            <span class="arch-output-chip bg-teal-600"><i
+                                    class="fas fa-th-large mr-1"></i>Tarjetas</span>
+                            <span class="arch-output-chip bg-teal-500"><i
+                                    class="fas fa-project-diagram mr-1"></i>Grafo</span>
+                            <span class="arch-output-chip bg-teal-500"><i class="fas fa-map-marked mr-1"></i>Mapa</span>
+                            <span class="arch-output-chip bg-teal-500"><i class="fas fa-table mr-1"></i>Tabla</span>
+                            <span class="arch-output-chip bg-teal-400"><i class="fas fa-file-csv mr-1"></i>CSV</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Barra inferior -->
+            <div
+                class="mt-4 bg-gradient-to-r from-gray-700 to-gray-600 text-gray-200 rounded-xl text-center py-3 text-xs font-semibold tracking-wider">
+                <i class="fas fa-link mr-2"></i>
+                Linked Open Data · Web Semántica · Ciencia Abierta y Reproducibilidad
+            </div>
+        </div>
+
+
+        <!-- Info pie de página -->
+        <div class="mt-12 bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-5xl mx-auto">
+            <div class="flex items-start gap-4">
+                <div class="bg-amber-100 rounded-lg p-3 flex-shrink-0">
+                    <i class="fas fa-lightbulb text-amber-500 text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-700 mb-1">¿No sabes por dónde empezar?</h4>
+                    <p class="text-gray-500 text-sm leading-relaxed">
+                        Comienza por la <strong>Búsqueda General</strong>: escribe el nombre de un autor como
+                        <em>"Cervantes"</em> o <em>"Lope de Vega"</em>, selecciona <strong>Wikidata</strong> y pulsa
+                        buscar.
+                        Verás los resultados en formato de tarjetas con imágenes y descripciones.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">
+                &copy; 2026 Biblio-API. Todos los derechos reservados.
+            </p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

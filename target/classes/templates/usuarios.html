@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Lista de Empleados</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f4f4f4; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .active { color: green; font-weight: bold; }
+        .inactive { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Lista de Empleados</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Email</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="empleado : ${empleados}">
+                <td th:text="${empleado.id}">1</td>
+                <td th:text="${empleado.username}">user1</td>
+                <td th:text="${empleado.nombre}">Nombre</td>
+                <td th:text="${empleado.apellido}">Apellido</td>
+                <td th:text="${empleado.email}">email@example.com</td>
+                <td>
+                    <span th:if="${empleado.activo}" class="active">Activo</span>
+                    <span th:unless="${empleado.activo}" class="inactive">Inactivo</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>

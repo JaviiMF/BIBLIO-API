@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Búsquedas - Biblio API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #4f46e5, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f9fafb;
+            transform: scale(1.005);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .badge-wikidata {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-bne {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-bvmc {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-bnf {
+            background-color: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .badge-default {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <div th:replace="~{fragments/nav :: navbar}"></div>
+
+    <div class="container mx-auto mt-8 p-6 mb-20">
+        <div class="fade-in">
+
+            <!-- ===== HERO ===== -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold tracking-tight mb-3">
+                    <span class="gradient-text">Mis Búsquedas</span>
+                </h1>
+                <p class="text-gray-500 text-lg max-w-2xl mx-auto">
+                    Historial de todas las consultas que has realizado. Puedes revisar los resultados, ver la consulta
+                    SPARQL exacta que se ejecutó y exportar los datos.
+                </p>
+            </div>
+
+            <!-- ===== PANEL SUPERIOR ===== -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="bg-white border border-blue-100 rounded-xl shadow-sm px-6 py-4 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-history text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 font-medium uppercase tracking-wide">Total de búsquedas</p>
+                        <p class="text-3xl font-bold text-blue-600"
+                            th:text="${busquedas != null ? busquedas.size() : 0}">0</p>
+                    </div>
+                </div>
+
+                <!-- Leyenda de repositorios -->
+                <div
+                    class="hidden md:flex items-center gap-3 bg-white border border-gray-100 rounded-xl shadow-sm px-5 py-3">
+                    <p class="text-xs text-gray-400 font-semibold uppercase mr-2">Repositorios:</p>
+                    <span class="badge badge-wikidata"><i class="fas fa-globe mr-1"></i>Wikidata</span>
+                    <span class="badge badge-bne"><i class="fas fa-book mr-1"></i>BNE</span>
+                    <span class="badge badge-bnf"><i class="fas fa-flag mr-1"></i>BNF</span>
+                    <span class="badge badge-bvmc"><i class="fas fa-scroll mr-1"></i>BVMC</span>
+                </div>
+            </div>
+
+            <!-- ===== SIN BÚSQUEDAS ===== -->
+            <div th:if="${busquedas == null || busquedas.isEmpty()}"
+                class="bg-white rounded-xl shadow-lg p-14 text-center">
+                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                    <i class="fas fa-search text-gray-400 text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Aún no has realizado ninguna búsqueda</h3>
+                <p class="text-gray-400 mb-7 text-sm max-w-md mx-auto">
+                    Cada vez que hagas una búsqueda (por tema, federada o análisis de calidad), quedará registrada aquí
+                    para que puedas consultarla más tarde.
+                </p>
+                <div class="flex justify-center gap-3 flex-wrap">
+                    <a th:href="@{/search}"
+                        class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-lg transition text-sm">
+                        <i class="fas fa-search"></i> Búsqueda por tema
+                    </a>
+                    <a th:href="@{/federated}"
+                        class="inline-flex items-center gap-2 bg-white border border-indigo-300 text-indigo-600 hover:bg-indigo-50 font-bold py-2.5 px-5 rounded-lg transition text-sm">
+                        <i class="fas fa-network-wired"></i> Búsqueda federada
+                    </a>
+                    <a th:href="@{/comparative}"
+                        class="inline-flex items-center gap-2 bg-white border border-teal-300 text-teal-600 hover:bg-teal-50 font-bold py-2.5 px-5 rounded-lg transition text-sm">
+                        <i class="fas fa-chart-bar"></i> Análisis de calidad
+                    </a>
+                </div>
+            </div>
+
+            <!-- ===== TABLA CON DATOS ===== -->
+            <div th:if="${busquedas != null && !busquedas.isEmpty()}"
+                class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+
+                <!-- Barra de búsqueda y acciones -->
+                <div class="p-4 border-b border-gray-200 bg-gray-50">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex-1 min-w-[220px] relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400 text-sm"></i>
+                            </div>
+                            <input type="text" id="searchInput"
+                                placeholder="Buscar en el historial (término, repositorio...)"
+                                class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
+                        </div>
+                        <button onclick="exportToCSV()"
+                            class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-lg transition text-sm">
+                            <i class="fas fa-file-csv"></i> Exportar CSV
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Haz clic en <strong>"Ver Query"</strong> para visualizar la consulta SPARQL exacta que se
+                        ejecutó en cada búsqueda.
+                    </p>
+                </div>
+
+                <div class="overflow-auto custom-scrollbar" style="max-height: 600px;">
+                    <table class="w-full" id="busquedasTable">
+                        <thead class="bg-gradient-to-r from-blue-600 to-purple-600 text-white sticky top-0 z-10">
+                            <tr>
+                                <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">ID</th>
+                                <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">
+                                    Término o tipo de búsqueda
+                                </th>
+                                <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">
+                                    Repositorio consultado
+                                </th>
+                                <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">
+                                    Resultados
+                                </th>
+                                <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">
+                                    Tiempo (ms)
+                                </th>
+                                <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Fecha</th>
+                                <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="busqueda : ${busquedas}" class="cursor-pointer">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="text-sm font-mono text-gray-500" th:text="${busqueda.id}">1</span>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="text-sm font-semibold text-gray-900 max-w-xs truncate"
+                                        th:title="${busqueda.terminoBusqueda}" th:text="${busqueda.terminoBusqueda}">
+                                        Término</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span th:if="${busqueda.endpointsConsultados.contains('wikidata')}"
+                                        class="badge badge-wikidata"><i class="fas fa-globe mr-1"></i>Wikidata</span>
+                                    <span th:if="${busqueda.endpointsConsultados.contains('bne.es')}"
+                                        class="badge badge-bne"><i class="fas fa-book mr-1"></i>BNE</span>
+                                    <span th:if="${busqueda.endpointsConsultados.contains('cervantesvirtual')}"
+                                        class="badge badge-bvmc"><i class="fas fa-scroll mr-1"></i>BVMC</span>
+                                    <span th:if="${busqueda.endpointsConsultados.contains('bnf.fr')}"
+                                        class="badge badge-bnf"><i class="fas fa-flag mr-1"></i>BNF</span>
+                                    <span
+                                        th:if="${!busqueda.endpointsConsultados.contains('wikidata') && !busqueda.endpointsConsultados.contains('bne.es') && !busqueda.endpointsConsultados.contains('cervantesvirtual') && !busqueda.endpointsConsultados.contains('bnf.fr')}"
+                                        class="badge badge-default">Otro</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                                        <span class="text-sm font-bold text-gray-900"
+                                            th:text="${busqueda.totalResultados}">0</span>
+                                        <span class="text-xs text-gray-400">resultados</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="text-sm text-gray-600" th:text="${busqueda.tiempoEjecucionMs}">0</span>
+                                    <span class="text-xs text-gray-400 ml-1">ms</span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-800"
+                                        th:text="${#temporals.format(busqueda.fechaBusqueda, 'dd/MM/yyyy')}">01/01/2024
+                                    </div>
+                                    <div class="text-xs text-gray-400"
+                                        th:text="${#temporals.format(busqueda.fechaBusqueda, 'HH:mm:ss')}">12:00:00
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm">
+                                    <button th:onclick="'showQueryModal(' + ${busqueda.id} + ')'"
+                                        class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-900 font-medium transition bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg">
+                                        <i class="fas fa-code text-xs"></i> Ver Query
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL QUERY SPARQL ===== -->
+    <div id="queryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden fade-in">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-white">Consulta SPARQL ejecutada</h3>
+                    <p class="text-blue-200 text-xs mt-0.5">Esta es la consulta que se envió al repositorio para obtener
+                        los resultados</p>
+                </div>
+                <button onclick="closeQueryModal()" class="text-white hover:text-gray-200 transition p-1">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(80vh-80px)]">
+                <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-4 flex items-start gap-2">
+                    <i class="fas fa-lightbulb text-amber-500 mt-0.5 text-sm"></i>
+                    <p class="text-xs text-amber-700">
+                        SPARQL es el lenguaje de consulta para grafos de conocimiento. Esta consulta fue generada
+                        automáticamente por la aplicación. Puedes copiarla y ejecutarla directamente en el endpoint del
+                        repositorio correspondiente.
+                    </p>
+                </div>
+                <pre id="queryContent"
+                    class="bg-gray-900 text-green-300 p-5 rounded-lg text-sm overflow-x-auto font-mono leading-relaxed"></pre>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">
+                &copy; 2026 Biblio-API. Todos los derechos reservados.
+            </p>
+        </div>
+    </footer>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const busquedasData = /*[[${busquedas}]]*/[];
+
+        document.getElementById('searchInput')?.addEventListener('input', function (e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#busquedasTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        function showQueryModal(id) {
+            const busqueda = busquedasData.find(b => b.id === id);
+            if (busqueda) {
+                document.getElementById('queryContent').textContent = busqueda.querySparql;
+                document.getElementById('queryModal').classList.remove('hidden');
+            }
+        }
+
+        function closeQueryModal() {
+            document.getElementById('queryModal').classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeQueryModal();
+        });
+
+        document.getElementById('queryModal')?.addEventListener('click', function (e) {
+            if (e.target === this) closeQueryModal();
+        });
+
+        function exportToCSV() {
+            const rows = [];
+            const headers = ['ID', 'Término', 'Repositorio', 'Resultados', 'Tiempo (ms)', 'Fecha'];
+            rows.push(headers.join(','));
+            busquedasData.forEach(busqueda => {
+                const row = [
+                    busqueda.id,
+                    `"${busqueda.terminoBusqueda}"`,
+                    `"${busqueda.endpointsConsultados}"`,
+                    busqueda.totalResultados,
+                    busqueda.tiempoEjecucionMs,
+                    `"${new Date(busqueda.fechaBusqueda).toLocaleString()}"`
+                ];
+                rows.push(row.join(','));
+            });
+            const csvContent = rows.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.setAttribute('href', URL.createObjectURL(blob));
+            link.setAttribute('download', 'mis-busquedas.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        /*]]>*/
+    </script>
+
+</body>
+
+</html>

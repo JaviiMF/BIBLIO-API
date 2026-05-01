@@ -1,0 +1,17 @@
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/DemoApplication.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/config/SecurityConfig.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/controller/AuthController.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/controller/BusquedaController.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/controller/HomeController.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/controller/SearchController.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/controller/UsuarioController.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/dto/UserRegistrationDto.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/model/Busqueda.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/model/Usuario.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/repository/BusquedaRepository.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/repository/UsuarioRepository.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/service/BusquedaService.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/service/DataEnrichmentService.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/service/SparqlService.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/service/UserService.java
+/Users/javiermartinez/Desktop/Proyectos/TFG/Biblio-API/src/main/java/com/example/demo/service/UserServiceImpl.java

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Búsqueda Federada - Biblio-API</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #4f46e5, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .field-help {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            background: #f0f9ff;
+            border-left: 3px solid #06b6d4;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .field-help i {
+            color: #0891b2;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .field-help p {
+            color: #0e7490;
+            font-size: 0.8rem;
+            margin: 0;
+        }
+
+        .field-help strong {
+            color: #0c4a6e;
+        }
+
+        .example-chip {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 0.15rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .example-chip:hover {
+            background: #c7d2fe;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.6rem;
+            height: 1.6rem;
+            background: #4f46e5;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+    </style>
+    <script>
+        function exportToCSV() {
+            const dataElement = document.getElementById('federated-data');
+            if (!dataElement) { alert('No hay datos para exportar'); return; }
+            const data = JSON.parse(dataElement.textContent);
+            const { results, columns } = data;
+            if (!results || results.length === 0) { alert('No hay resultados para exportar'); return; }
+            let csv = '';
+            csv += columns.map(col => `"${col}"`).join(',') + '\n';
+            results.forEach(row => {
+                const rowData = columns.map(col => {
+                    const value = row[col] || 'N/A';
+                    return `"${String(value).replace(/"/g, '""')}"`;
+                });
+                csv += rowData.join(',') + '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `busqueda_federada_${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function fillExample(qid) {
+            document.getElementById('wikidataEntity').value = qid;
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 flex flex-col min-h-screen">
+    <div th:replace="fragments/nav :: nav"></div>
+    <main class="flex-grow container mx-auto px-4 py-8">
+
+        <!-- ===== HERO / DESCRIPCIÓN ===== -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold mb-3 font-sans tracking-tight">
+                <span class="gradient-text">Búsqueda Federada</span>
+            </h1>
+            <p class="text-gray-500 text-lg max-w-3xl mx-auto leading-relaxed">
+                Conecta datos entre repositorios: introduce el identificador de un autor en Wikidata y obtén su catálogo
+                de obras directamente desde la BNE, la BNF o la Virtual Miguel de Cervantes.
+            </p>
+        </div>
+
+        <!-- ===== CÓMO FUNCIONA ===== -->
+        <div class="bg-white rounded-xl shadow-sm border border-indigo-100 p-6 mb-8 max-w-3xl mx-auto">
+            <h2 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">
+                <i class="fas fa-info-circle text-indigo-400 mr-2"></i>¿Cómo funciona la búsqueda federada?
+            </h2>
+
+            <div class="space-y-4">
+                <div class="flex items-start gap-3">
+                    <span class="step-badge">1</span>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        La aplicación busca en Wikidata el <strong>identificador equivalente</strong> del autor en el
+                        repositorio bibliográfico elegido (por ejemplo, su número de autoridad en la BNE o su ARK en la
+                        BNF).
+                    </p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="step-badge">2</span>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        Con ese identificador, lanza una <strong>consulta federada</strong>: una consulta SPARQL que,
+                        desde Wikidata, se conecta en tiempo real al servidor del repositorio bibliográfico y recupera
+                        su
+                        información.
+                    </p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="step-badge">3</span>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        Se muestra la lista de <strong>obras del autor</strong> tal y como las tiene registradas ese
+                        repositorio: título, editorial, lugar, año de publicación e idioma.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Aviso -->
+            <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-start gap-3">
+                <i class="fas fa-clock text-amber-500 mt-0.5"></i>
+                <p class="text-xs text-amber-700">
+                    <strong>Nota:</strong> Al coordinar varios servidores en tiempo real, esta búsqueda puede tardar
+                    entre <strong>5 y 30 segundos</strong>. Es completamente normal. Si el autor no tiene enlace en el
+                    repositorio seleccionado, se mostrará un mensaje de error.
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== FORMULARIO ===== -->
+        <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden mb-12 border border-gray-100 p-8">
+            <h2 class="text-lg font-bold text-gray-700 mb-6 flex items-center gap-2">
+                <i class="fas fa-network-wired text-indigo-500"></i> Configura la búsqueda
+            </h2>
+
+            <form th:action="@{/federated}" method="POST" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- ENTIDAD WIKIDATA -->
+                    <div>
+                        <label for="wikidataEntity" class="block text-sm font-bold text-gray-700 mb-1">
+                            Identificador Wikidata
+                            <span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-barcode text-gray-400"></i>
+                            </div>
+                            <input type="text" id="wikidataEntity" name="wikidataEntity" th:value="${wikidataEntity}"
+                                placeholder="Ej: Q5557"
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                required>
+                        </div>
+                        <div class="field-help flex items-center gap-4">
+                            <i class="fas fa-tag fa-sm"></i>
+                            <p>
+                                El identificador de una entidad en Wikidata es la letra <strong>Q</strong> seguida de un
+                                número.
+                                Para encontrarlo, busca el autor en <a href="https://www.wikidata.org" target="_blank"
+                                    class="underline">wikidata.org</a> y copia el código que aparece en la URL (ej:
+                                <strong>Q5557</strong>).
+                            </p>
+                        </div>
+
+                        <!-- Ejemplos clicables -->
+                        <div class="mt-3">
+                            <p class="text-xs text-gray-400 mb-2 font-medium">Ejemplos rápidos — haz clic para rellenar:
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="fillExample('Q5557')" class="example-chip">Q5557</button>
+                                <button type="button" onclick="fillExample('Q80535')"
+                                    class="example-chip">Q80535</button>
+                                <button type="button" onclick="fillExample('Q3812')" class="example-chip">Q3812</button>
+                                <button type="button" onclick="fillExample('Q36670')"
+                                    class="example-chip">Q36670</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REPOSITORIO -->
+                    <div>
+                        <label for="targetRepository" class="block text-sm font-bold text-gray-700 mb-1">
+                            Repositorio bibliográfico
+                            <span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-database text-gray-400"></i>
+                            </div>
+                            <select id="targetRepository" name="targetRepository"
+                                class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none transition-all">
+                                <option value="http://datos.bne.es/sparql"
+                                    th:selected="${targetRepository == 'http://datos.bne.es/sparql'}">
+                                    BNE — Biblioteca Nacional de España</option>
+                                <option value="http://data.bnf.fr/sparql"
+                                    th:selected="${targetRepository == 'http://data.bnf.fr/sparql'}">
+                                    BNF — Bibliothèque nationale de France</option>
+                                <option value="https://data.cervantesvirtual.com/sparql"
+                                    th:selected="${targetRepository == 'https://data.cervantesvirtual.com/sparql'}">
+                                    BVMC — Biblioteca Virtual Miguel de Cervantes</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div class="field-help flex items-center gap-4">
+                            <i class="fas fa-server fa-sm"></i>
+                            <p>
+                                El repositorio donde se buscará el catálogo de obras del autor.
+                                <strong>Para que funcione</strong>, Wikidata debe tener un enlace al repositorio
+                                seleccionado para ese autor.
+                                Si no existe ese enlace, se mostrará un error.
+                            </p>
+                        </div>
+
+                        <!-- Qué recupera cada repositorio -->
+                        <div class="mt-3 space-y-1">
+                            <p class="text-xs text-gray-400 font-medium">¿Qué recupera cada uno?</p>
+                            <p class="text-xs text-gray-500"><span class="font-semibold text-yellow-700">BNE:</span>
+                                metadatos de autoridad y propiedades bibliográficas.</p>
+                            <p class="text-xs text-gray-500"><span class="font-semibold text-purple-700">BNF:</span>
+                                obras, ediciones, editorial, lugar y año de publicación.</p>
+                            <p class="text-xs text-gray-500"><span class="font-semibold text-green-700">BVMC:</span>
+                                obras, manifestaciones, lugar de producción, año e idioma.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-8 py-3 border border-transparent text-base font-bold rounded-lg shadow text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all transform hover:scale-105">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ===== RESULTADOS ===== -->
+        <div th:if="${results}" class="mt-8 max-w-5xl mx-auto">
+
+            <!-- Hidden data for CSV export -->
+            <script id="federated-data" type="application/json" th:inline="javascript">
+                {
+                    "results": /*[[${results}]]*/ [],
+                    "columns": /*[[${columns}]]*/ []
+                }
+            </script>
+
+            <!-- Cabecera resultados -->
+            <div class="bg-white rounded-lg shadow border border-gray-100 p-4 mb-4">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-table text-indigo-500"></i>
+                            Resultados (<span th:text="${results.size()}">0</span>)
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            Obras encontradas en el repositorio seleccionado para la entidad
+                            <strong th:text="${wikidataEntity}" class="text-indigo-600"></strong>
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span th:if="${totalTime}" class="text-gray-500 text-sm">
+                            <i class="fas fa-clock mr-1 text-gray-400"></i>
+                            <span th:text="${totalTime}">0</span> ms
+                        </span>
+                        <button onclick="exportToCSV()"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition-colors shadow flex items-center gap-2">
+                            <i class="fas fa-file-csv"></i> Exportar CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aviso sobre columnas -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-4 flex items-start gap-3">
+                <i class="fas fa-info-circle text-blue-400 mt-0.5"></i>
+                <p class="text-xs text-blue-700">
+                    Los campos marcados como <strong>Enlace</strong> son URLs que puedes abrir en el repositorio de
+                    origen.
+                    Los campos vacíos indican que ese dato no está registrado para esta obra.
+                </p>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th th:each="col : ${columns}" scope="col"
+                                    class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50">
+                                    <span th:text="${col}">Columna</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="row : ${results}" class="hover:bg-gray-50 transition-colors duration-150">
+                                <td th:each="col : ${columns}"
+                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="max-w-xs truncate"
+                                        th:title="${row.get(col) != null ? row.get(col) : 'N/A'}">
+                                        <a th:if="${row.get(col) != null and row.get(col).startsWith('http')}"
+                                            th:href="${row.get(col)}" target="_blank"
+                                            class="text-indigo-600 hover:text-indigo-900 flex items-center gap-1">
+                                            <i class="fas fa-external-link-alt text-xs"></i>Enlace
+                                        </a>
+                                        <span th:if="${row.get(col) == null or row.get(col).isEmpty()}"
+                                            class="text-gray-300 italic">N/A</span>
+                                        <span
+                                            th:if="${row.get(col) != null and !row.get(col).isEmpty() and !row.get(col).startsWith('http')}"
+                                            th:text="${row.get(col)}">Valor</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error -->
+        <div th:if="${error}"
+            class="max-w-3xl mx-auto mt-6 p-5 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+            <i class="fas fa-exclamation-triangle text-red-500 mt-0.5"></i>
+            <div>
+                <p class="font-bold mb-1">No se pudo completar la búsqueda federada</p>
+                <p th:text="${error}"></p>
+                <p class="mt-2 text-xs text-red-500">
+                    Comprueba que el identificador Wikidata es correcto y que el autor tiene enlace al repositorio
+                    seleccionado.
+                    Puedes verificarlo en <a href="https://www.wikidata.org" target="_blank"
+                        class="underline">wikidata.org</a>.
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">&copy; 2026 Biblio-API. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

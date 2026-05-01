@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acerca de - Biblio API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #4f46e5, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bg-hero {
+            background: linear-gradient(135deg, #f0f4ff 0%, #f0fdfa 100%);
+        }
+
+        .feature-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .repo-card {
+            border-left: 4px solid;
+            transition: transform 0.15s ease;
+        }
+
+        .repo-card:hover {
+            transform: translateX(3px);
+        }
+
+        .timeline-dot {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <div th:replace="~{fragments/nav :: navbar}"></div>
+
+    <!-- ===== HERO ===== -->
+    <section class="bg-hero py-20 px-4 border-b border-gray-100">
+        <div class="max-w-4xl mx-auto text-center">
+            <p class="text-indigo-500 font-semibold text-sm uppercase tracking-widest mb-3">
+                <i class="fas fa-info-circle mr-2"></i>Trabajo de Fin de Grado
+            </p>
+            <h1 class="text-5xl font-bold tracking-tight mb-5">
+                <span class="gradient-text">Acerca de Biblio-API</span>
+            </h1>
+            <p class="text-gray-600 text-xl leading-relaxed max-w-3xl mx-auto">
+                Biblio-API es una aplicación web que actúa como <strong>punto de acceso unificado</strong>
+                a los distintos repositorios bibliográficos nacionales e internacionales,
+                permitiendo buscar, comparar y analizar información cultural sin la necesidad de tener conocimientos técnicos
+                sobre SPARQL.
+            </p>
+
+            <!-- Repositorios -->
+            <div class="flex flex-wrap justify-center gap-3 mt-8">
+                <span
+                    class="inline-flex items-center gap-2 bg-white border border-blue-200 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
+                    <i class="fas fa-globe"></i> Wikidata
+                </span>
+                <span
+                    class="inline-flex items-center gap-2 bg-white border border-yellow-300 text-yellow-800 px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
+                    <i class="fas fa-book"></i> BNE (Biblioteca Nacional de España)
+                </span>
+                <span
+                    class="inline-flex items-center gap-2 bg-white border border-purple-300 text-purple-700 px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
+                    <i class="fas fa-flag"></i> BNF (Bibliothèque nationale de France)
+                </span>
+                <span
+                    class="inline-flex items-center gap-2 bg-white border border-green-300 text-green-700 px-4 py-2 rounded-full text-sm font-semibold shadow-sm">
+                    <i class="fas fa-scroll"></i> BVMC (Biblioteca Virtual Miguel de Cervantes)
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <div class="max-w-5xl mx-auto px-6 py-16 space-y-20">
+
+        <!-- ===== EL PROBLEMA ===== -->
+        <section>
+            <div class="flex items-start gap-5">
+                <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-3">El problema que resuelve</h2>
+                    <p class="text-gray-600 leading-relaxed mb-4">
+                        Los distintos repositorios bibliográficos (Wikidata, BNE, BNF, BVMC) almacenan información
+                        sobre autores, obras y patrimonio cultural,
+                        pero están dispersos y son accesibles únicamente a través de un lenguaje técnico denominado
+                        <strong>SPARQL</strong>.
+                        Esto crea una barrera que excluye a investigadores, estudiantes y usuarios sin perfil técnico.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed">
+                        Además, los repositorios no están completamente <strong>enlazados entre sí</strong>: un autor
+                        puede existir en Wikidata
+                        pero carecer de conexión con su ficha en la BNE o la Biblioteca Virtual de Cervantes, lo que fragmenta el
+                        conocimiento y dificulta la búsqueda, recuperación y análisis de los datos de una forma integrada
+                        fomentado la colaboración.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== FUNCIONALIDADES ===== -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">¿Qué puede hacer la aplicación?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Card 1 -->
+                <div class="feature-card bg-white rounded-xl shadow border border-indigo-100 p-6">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-search text-indigo-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Búsqueda General</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">
+                        El usuario escribe cualquier término de búsqueda (un autor, una obra, un género...) y la
+                        aplicación construye automáticamente la consulta SPARQL y la lanza contra el repositorio
+                        elegido.
+                        Los resultados se visualizan como <strong>tarjetas, grafo de relaciones, mapa geográfico o
+                            tabla</strong>.
+                    </p>
+                    <a th:href="@{/search}"
+                        class="inline-flex items-center gap-1.5 text-indigo-600 text-sm font-semibold mt-4 hover:underline">
+                        Ir a búsqueda general <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="feature-card bg-white rounded-xl shadow border border-cyan-100 p-6">
+                    <div class="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-network-wired text-cyan-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Búsqueda Federada</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">
+                        Introduce el identificador de un autor en Wikidata (por ejemplo <code
+                            class="bg-gray-100 px-1 rounded">Q5557</code>)
+                        y la aplicación integrará los datos entre repositorios en tiempo real, recuperando el catálogo completo
+                        de obras desde la BNE, BNF o BVMC.
+                    </p>
+                    <a th:href="@{/federated}"
+                        class="inline-flex items-center gap-1.5 text-cyan-600 text-sm font-semibold mt-4 hover:underline">
+                        Ir a búsqueda federada <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="feature-card bg-white rounded-xl shadow border border-teal-100 p-6">
+                    <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-chart-bar text-teal-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Análisis de Calidad</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">
+                        Selecciona un periodo literario (Siglo de Oro, Edad de Plata o Guerra Civil) y un país, y obtén
+                        métricas sobre cuántos autores están enlazados en la BNE, BNF y BVMC.
+                        Es una herramienta para <strong>medir la calidad del enlazado</strong> e identificar brechas en
+                        los datos.
+                    </p>
+                    <a th:href="@{/comparative}"
+                        class="inline-flex items-center gap-1.5 text-teal-600 text-sm font-semibold mt-4 hover:underline">
+                        Ir al análisis del enlazado <i class="fas fa-arrow-right text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== REPOSITORIOS ===== -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Repositorios conectados</h2>
+            <p class="text-center text-gray-500 text-sm mb-8 max-w-2xl mx-auto">
+                Todos ellos exponen sus datos como grafos de conocimiento accesibles mediante SPARQL, el estándar de la
+                Web Semántica.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div class="repo-card bg-white rounded-xl shadow-sm p-5" style="border-color: #3b82f6;">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-globe text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">Wikidata</h3>
+                            <p class="text-gray-500 text-sm mt-1 leading-relaxed">
+                                Base de datos de conocimiento libre mantenida por la Fundación Wikimedia. Contiene
+                                millones de entidades (personas, lugares, obras) con sus propiedades y relaciones.
+                                Ámbito <strong>internacional</strong>.
+                            </p>
+                            <p class="text-xs text-blue-500 mt-2 font-mono">query.wikidata.org/sparql</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="repo-card bg-white rounded-xl shadow-sm p-5" style="border-color: #f59e0b;">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-book text-yellow-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">BNE — Biblioteca Nacional de España</h3>
+                            <p class="text-gray-500 text-sm mt-1 leading-relaxed">
+                                Catálogo de autoridades y registros bibliográficos de España. Cada autor tiene un
+                                identificador único accesible desde Wikidata mediante la propiedad
+                                <strong>P950</strong>.
+                            </p>
+                            <p class="text-xs text-yellow-600 mt-2 font-mono">datos.bne.es/sparql</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="repo-card bg-white rounded-xl shadow-sm p-5" style="border-color: #8b5cf6;">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-flag text-purple-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">BNF — Bibliothèque nationale de France</h3>
+                            <p class="text-gray-500 text-sm mt-1 leading-relaxed">
+                                Institución bibliográfica nacional francesa con datos sobre obras, ediciones y autores
+                                de todo el mundo. Identificador en Wikidata: propiedad <strong>P268</strong> (ARK).
+                            </p>
+                            <p class="text-xs text-purple-500 mt-2 font-mono">data.bnf.fr/sparql</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="repo-card bg-white rounded-xl shadow-sm p-5" style="border-color: #10b981;">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-scroll text-green-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">BVMC — Biblioteca Virtual Miguel de Cervantes</h3>
+                            <p class="text-gray-500 text-sm mt-1 leading-relaxed">
+                                Mayor repositorio digital de literatura hispánica. Especializado en literatura en
+                                español. Identificador en Wikidata: propiedad <strong>P2799</strong>.
+                            </p>
+                            <p class="text-xs text-green-600 mt-2 font-mono">data.cervantesvirtual.com/sparql</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== TECNOLOGÍA ===== -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">Tecnología</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
+                    <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-leaf text-green-600 text-xl"></i>
+                    </div>
+                    <p class="font-bold text-gray-800 text-sm">Spring Boot 3.4</p>
+                    <p class="text-gray-400 text-xs mt-1">Backend · Java 21</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
+                    <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-fire text-indigo-500 text-xl"></i>
+                    </div>
+                    <p class="font-bold text-gray-800 text-sm">Apache Jena ARQ</p>
+                    <p class="text-gray-400 text-xs mt-1">Motor SPARQL</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-database text-blue-500 text-xl"></i>
+                    </div>
+                    <p class="font-bold text-gray-800 text-sm">PostgreSQL</p>
+                    <p class="text-gray-400 text-xs mt-1">Usuarios e historial</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
+                    <div class="w-12 h-12 bg-cyan-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-palette text-cyan-500 text-xl"></i>
+                    </div>
+                    <p class="font-bold text-gray-800 text-sm">Thymeleaf + Tailwind</p>
+                    <p class="text-gray-400 text-xs mt-1">Interfaz web</p>
+                </div>
+            </div>
+
+            <!-- Librerías de visualización -->
+            <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-3">Librerías de visualización</p>
+                <div class="flex flex-wrap gap-3">
+                    <span
+                        class="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-xs font-medium">
+                        <i class="fas fa-project-diagram"></i> vis-network — grafos de relaciones
+                    </span>
+                    <span
+                        class="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-xs font-medium">
+                        <i class="fas fa-map-marked-alt"></i> Leaflet.js — mapas interactivos
+                    </span>
+                    <span
+                        class="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-full text-xs font-medium">
+                        <i class="fas fa-shield-alt"></i> Spring Security — autenticación BCrypt
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CÓMO FUNCIONA (flujo) ===== -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">¿Cómo fluyen los datos?</h2>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                <div class="space-y-6">
+
+                    <div class="flex items-start gap-4">
+                        <div class="timeline-dot bg-indigo-500">1</div>
+                        <div class="border-b border-gray-100 pb-5 w-full">
+                            <h4 class="font-bold text-gray-800 mb-1">El usuario introduce su término búsqueda</h4>
+                            <p class="text-gray-500 text-sm leading-relaxed">
+                                Escribe un término de búsqueda, un identificador Wikidata o selecciona un periodo literario.
+                                No necesita conocer SPARQL.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="timeline-dot bg-purple-500">2</div>
+                        <div class="border-b border-gray-100 pb-5 w-full">
+                            <h4 class="font-bold text-gray-800 mb-1">La aplicación construye la consulta SPARQL</h4>
+                            <p class="text-gray-500 text-sm leading-relaxed">
+                                El <strong>SparqlService</strong> genera automáticamente la consulta adaptada al
+                                repositorio seleccionado, con los filtros y campos adecuados.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="timeline-dot bg-cyan-500">3</div>
+                        <div class="border-b border-gray-100 pb-5 w-full">
+                            <h4 class="font-bold text-gray-800 mb-1">Apache Jena consulta el repositorio en tiempo real
+                            </h4>
+                            <p class="text-gray-500 text-sm leading-relaxed">
+                                La consulta a través del endpoint SPARQL del repositorio (Wikidata, BNE,
+                                BNF o BVMC), que procesa la petición y devuelve los datos.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4">
+                        <div class="timeline-dot bg-teal-500">4</div>
+                        <div class="w-full">
+                            <h4 class="font-bold text-gray-800 mb-1">Los resultados se enriquecen y visualizan</h4>
+                            <p class="text-gray-500 text-sm leading-relaxed">
+                                El <strong>DataEnrichmentService</strong> procesa los datos para cada modo de
+                                visualización (tarjetas, grafo, mapa, tabla) y los muestra en la interfaz. La búsqueda
+                                queda registrada en el historial del usuario.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CTA FINAL ===== -->
+        <section class="text-center pb-4">
+            <div class="bg-gradient-to-r from-indigo-600 to-cyan-500 rounded-2xl p-10 text-white">
+                <h2 class="text-2xl font-bold mb-3">¿Listo para explorar?</h2>
+                <p class="text-indigo-100 mb-7 max-w-xl mx-auto">
+                    Empieza buscando cualquier autor o tema en los distintos repositorios bibliográficos.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a th:href="@{/search}"
+                        class="inline-flex items-center gap-2 bg-white text-indigo-700 font-bold px-6 py-3 rounded-xl shadow hover:bg-indigo-50 transition">
+                        <i class="fas fa-search"></i> Búsqueda General
+                    </a>
+                    <a th:href="@{/federated}"
+                        class="inline-flex items-center gap-2 bg-indigo-700 bg-opacity-60 hover:bg-opacity-80 text-white font-bold px-6 py-3 rounded-xl transition border border-white border-opacity-30">
+                        <i class="fas fa-network-wired"></i> Búsqueda federada
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="bg-white border-t border-gray-200">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">
+                &copy; 2026 Biblio-API. Todos los derechos reservados.
+            </p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Análisis de Calidad - Biblio API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #4f46e5, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.6rem;
+            height: 1.6rem;
+            background: #4f46e5;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .period-description {
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            padding: 0.6rem 0.9rem;
+            margin-top: 0.75rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .period-description p {
+            font-size: 0.78rem;
+            color: #475569;
+            margin: 0;
+        }
+
+        .period-description strong {
+            color: #1e293b;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+    <div th:replace="~{fragments/nav :: navbar}"></div>
+
+    <div class="container mx-auto mt-8 p-6 mb-20 flex-grow">
+
+        <!-- ===== HERO ===== -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold mb-3 font-sans tracking-tight">
+                <span class="gradient-text">Análisis de Calidad</span>
+            </h1>
+            <p class="text-gray-500 text-lg max-w-3xl mx-auto leading-relaxed">
+                Evalúa cuántos autores de un periodo literario están debidamente enlazados en los repositorios BNE, BNF
+                y BVMC.
+                Esta información permite identificar brechas en la interconexión de datos bibliográficos.
+            </p>
+        </div>
+
+        <!-- ===== QUÉ ES EL ENLAZADO ===== -->
+        <div class="bg-white rounded-xl shadow-sm border border-purple-100 p-6 mb-8 max-w-4xl mx-auto">
+            <h2 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">
+                <i class="fas fa-info-circle text-purple-400 mr-2"></i>¿Qué mide este análisis?
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="flex items-start gap-3">
+                    <span class="step-badge" style="background:#3b82f6;">1</span>
+                    <div>
+                        <p class="font-semibold text-gray-700 text-sm">Busca los autores</p>
+                        <p class="text-gray-500 text-xs mt-1">Wikidata dispone de datos sobre miles de autores con sus
+                            fechas de nacimiento y país de origen.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="step-badge" style="background:#8b5cf6;">2</span>
+                    <div>
+                        <p class="font-semibold text-gray-700 text-sm">Verifica los enlaces</p>
+                        <p class="text-gray-500 text-xs mt-1">Para cada autor comprueba si Wikidata tiene registrado su
+                            identificador en la BNE, BNF y BVMC.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="step-badge" style="background:#14b8a6;">3</span>
+                    <div>
+                        <p class="font-semibold text-gray-700 text-sm">Muestra el resultado</p>
+                        <p class="text-gray-500 text-xs mt-1">Obtienes métricas de cobertura y una tabla detallada para
+                            ver qué autores faltan o están incompletos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-3 flex items-start gap-3">
+                <i class="fas fa-link text-indigo-400 mt-0.5"></i>
+                <p class="text-xs text-indigo-700">
+                    Un autor está "enlazado" si Wikidata conoce su número de autoridad en la BNE (propiedad
+                    <strong>P950</strong>),
+                    su ARK en la BNF (propiedad <strong>P268</strong>) o su ID en la BVMC (propiedad
+                    <strong>P2799</strong>).
+                    Sin esos enlaces, los sistemas no pueden cruzar la información entre repositorios.
+                </p>
+            </div>
+        </div>
+
+        <!-- ===== ALERTAS ===== -->
+        <div th:if="${error}"
+            class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 max-w-3xl mx-auto"
+            role="alert">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span class="block sm:inline" th:text="${error}">Error</span>
+        </div>
+
+        <!-- ===== CARDS DE PERIODO ===== -->
+        <p class="text-center text-xs font-bold text-gray-400 uppercase tracking-widest mb-5">
+            Selecciona el periodo literario que quieres analizar
+        </p>
+
+        <div class="max-w-3xl mx-auto mb-8 space-y-4">
+
+            <!-- Card 1: Siglo de Oro -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden border-t-4 border-indigo-500">
+                <button onclick="toggleCard('card-golden')"
+                    class="w-full px-6 py-4 text-left font-bold text-gray-800 bg-gray-50 hover:bg-gray-100 flex justify-between items-center focus:outline-none">
+                    <span><i class="fas fa-crown text-indigo-500 mr-2"></i> Autores del Siglo de Oro</span>
+                    <i id="icon-card-golden"
+                        class="fas fa-chevron-down text-gray-400 transition-transform duration-200"></i>
+                </button>
+                <div id="card-golden" class="hidden transition-all duration-300 ease-in-out">
+                    <div class="p-6">
+                        <!-- Descripción del periodo -->
+                        <div class="period-description mb-5">
+                            <p>
+                                <strong>Periodo cubierto: nacidos entre 1492 y 1681.</strong>
+                                El Siglo de Oro español engloba la Edad Media tardía hasta el Barroco. Autores
+                                representativos:
+                                Cervantes, Quevedo, Lope de Vega, Calderón de la Barca, Góngora.
+                            </p>
+                        </div>
+                        <form th:action="@{/comparative}" method="post"
+                            class="flex flex-col md:flex-row gap-4 items-end">
+                            <input type="hidden" name="period" value="golden-age">
+                            <div class="w-full">
+                                <label for="country-golden" class="block text-gray-700 text-sm font-bold mb-1">País de
+                                    Nacimiento</label>
+                                <select id="country-golden" name="country"
+                                    class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white">
+                                    <option value="españa"
+                                        th:selected="${country == 'españa' and period == 'golden-age'}">España</option>
+                                    <option value="portugal"
+                                        th:selected="${country == 'portugal' and period == 'golden-age'}">Portugal
+                                    </option>
+                                    <option value="francia"
+                                        th:selected="${country == 'francia' and period == 'golden-age'}">Francia
+                                    </option>
+                                    <option value="italia"
+                                        th:selected="${country == 'italia' and period == 'golden-age'}">Italia</option>
+                                    <option value="alemania"
+                                        th:selected="${country == 'alemania' and period == 'golden-age'}">Alemania
+                                    </option>
+                                    <option value="mexico"
+                                        th:selected="${country == 'mexico' and period == 'golden-age'}">México</option>
+                                    <option value="colombia"
+                                        th:selected="${country == 'colombia' and period == 'golden-age'}">Colombia
+                                    </option>
+                                    <option value="peru" th:selected="${country == 'peru' and period == 'golden-age'}">
+                                        Perú</option>
+                                    <option value="argentina"
+                                        th:selected="${country == 'argentina' and period == 'golden-age'}">Argentina
+                                    </option>
+                                </select>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>Filtra por el país de nacimiento del autor
+                                    según Wikidata. El resultado incluye autores cuya ocupación sea escritor, poeta,
+                                    dramaturgo, novelista o letrista.
+                                </p>
+                            </div>
+                            <button type="submit"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition whitespace-nowrap">
+                                <i class="fas fa-search mr-2"></i> Analizar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Edad de Plata -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden border-t-4 border-teal-500">
+                <button onclick="toggleCard('card-silver')"
+                    class="w-full px-6 py-4 text-left font-bold text-gray-800 bg-gray-50 hover:bg-gray-100 flex justify-between items-center focus:outline-none">
+                    <span><i class="fas fa-feather-alt text-teal-500 mr-2"></i> Autores de la Edad de Plata</span>
+                    <i id="icon-card-silver"
+                        class="fas fa-chevron-down text-gray-400 transition-transform duration-200"></i>
+                </button>
+                <div id="card-silver" class="hidden transition-all duration-300 ease-in-out">
+                    <div class="p-6">
+                        <div class="period-description mb-5">
+                            <p>
+                                <strong>Periodo cubierto: nacidos entre 1868 y 1936.</strong>
+                                La Edad de Plata es el florecimiento cultural español previo a la Guerra Civil. Autores
+                                representativos:
+                                Antonio Machado, García Lorca, Valle-Inclán, Juan Ramón Jiménez, Unamuno.
+                            </p>
+                        </div>
+                        <form th:action="@{/comparative}" method="post"
+                            class="flex flex-col md:flex-row gap-4 items-end">
+                            <input type="hidden" name="period" value="silver-age">
+                            <div class="w-full">
+                                <label for="country-silver" class="block text-gray-700 text-sm font-bold mb-1">País de
+                                    Nacimiento</label>
+                                <select id="country-silver" name="country"
+                                    class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white">
+                                    <option value="españa"
+                                        th:selected="${country == 'españa' and period == 'silver-age'}">España</option>
+                                    <option value="portugal"
+                                        th:selected="${country == 'portugal' and period == 'silver-age'}">Portugal
+                                    </option>
+                                    <option value="francia"
+                                        th:selected="${country == 'francia' and period == 'silver-age'}">Francia
+                                    </option>
+                                    <option value="italia"
+                                        th:selected="${country == 'italia' and period == 'silver-age'}">Italia</option>
+                                    <option value="alemania"
+                                        th:selected="${country == 'alemania' and period == 'silver-age'}">Alemania
+                                    </option>
+                                    <option value="mexico"
+                                        th:selected="${country == 'mexico' and period == 'silver-age'}">México</option>
+                                    <option value="colombia"
+                                        th:selected="${country == 'colombia' and period == 'silver-age'}">Colombia
+                                    </option>
+                                    <option value="peru" th:selected="${country == 'peru' and period == 'silver-age'}">
+                                        Perú</option>
+                                    <option value="argentina"
+                                        th:selected="${country == 'argentina' and period == 'silver-age'}">Argentina
+                                    </option>
+                                </select>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>Filtra por el país de nacimiento del autor
+                                    según Wikidata. El resultado incluye autores cuya ocupación sea escritor, poeta,
+                                    dramaturgo, novelista o letrista.
+                                </p>
+                            </div>
+                            <button type="submit"
+                                class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:ring-2 focus:ring-teal-400 transition whitespace-nowrap">
+                                <i class="fas fa-search mr-2"></i> Analizar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Guerra Civil -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden border-t-4 border-red-500">
+                <button onclick="toggleCard('card-civil')"
+                    class="w-full px-6 py-4 text-left font-bold text-gray-800 bg-gray-50 hover:bg-gray-100 flex justify-between items-center focus:outline-none">
+                    <span><i class="fas fa-fighter-jet text-red-500 mr-2"></i> Autores de la Guerra Civil</span>
+                    <i id="icon-card-civil"
+                        class="fas fa-chevron-down text-gray-400 transition-transform duration-200"></i>
+                </button>
+                <div id="card-civil" class="hidden transition-all duration-300 ease-in-out">
+                    <div class="p-6">
+                        <div class="period-description mb-5">
+                            <p>
+                                <strong>Periodo cubierto: nacidos entre 1931 y 1939.</strong>
+                                Escritores fecha de nacimiento coincidió con el periodo entre la Segunda República y la
+                                Guerra Civil española.
+                                Autores representativos: Max Aub, León Felipe, Rafael Alberti, María Zambrano.
+                            </p>
+                        </div>
+                        <form th:action="@{/comparative}" method="post"
+                            class="flex flex-col md:flex-row gap-4 items-end">
+                            <input type="hidden" name="period" value="civil-war">
+                            <div class="w-full">
+                                <label for="country-civil" class="block text-gray-700 text-sm font-bold mb-1">País de
+                                    Nacimiento</label>
+                                <select id="country-civil" name="country"
+                                    class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-red-400 bg-white">
+                                    <option value="españa"
+                                        th:selected="${country == 'españa' and period == 'civil-war'}">España</option>
+                                    <option value="portugal"
+                                        th:selected="${country == 'portugal' and period == 'civil-war'}">Portugal
+                                    </option>
+                                    <option value="francia"
+                                        th:selected="${country == 'francia' and period == 'civil-war'}">Francia</option>
+                                    <option value="italia"
+                                        th:selected="${country == 'italia' and period == 'civil-war'}">Italia</option>
+                                    <option value="alemania"
+                                        th:selected="${country == 'alemania' and period == 'civil-war'}">Alemania
+                                    </option>
+                                    <option value="mexico"
+                                        th:selected="${country == 'mexico' and period == 'civil-war'}">México</option>
+                                    <option value="colombia"
+                                        th:selected="${country == 'colombia' and period == 'civil-war'}">Colombia
+                                    </option>
+                                    <option value="peru" th:selected="${country == 'peru' and period == 'civil-war'}">
+                                        Perú</option>
+                                    <option value="argentina"
+                                        th:selected="${country == 'argentina' and period == 'civil-war'}">Argentina
+                                    </option>
+                                </select>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>Filtra por el país de nacimiento del autor
+                                    según Wikidata. El resultado incluye autores cuya ocupación sea escritor, poeta,
+                                    dramaturgo, novelista o letrista.
+                                </p>
+                            </div>
+                            <button type="submit"
+                                class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:ring-2 focus:ring-red-400 transition whitespace-nowrap">
+                                <i class="fas fa-search mr-2"></i> Analizar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Hidden period helper -->
+        <input type="hidden" id="currentPeriod" th:value="${period != null ? period : 'golden-age'}">
+
+        <!-- ===== RESULTADOS ===== -->
+        <div th:if="${results != null}" class="animate-fade-in-down">
+
+            <!-- Cabecera -->
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    Resultados para
+                    <span class="text-indigo-600"
+                        th:text="${period == 'silver-age' ? 'Edad de Plata' : (period == 'civil-war' ? 'Guerra Civil' : 'Siglo de Oro')}"></span>
+                    — <span th:text="${country}" class="capitalize text-gray-600"></span>
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">
+                    Los porcentajes indican qué fracción del total de autores encontrados tiene enlace en cada
+                    repositorio.
+                </p>
+            </div>
+
+            <!-- Métricas -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <!-- Total -->
+                <div class="bg-white p-6 rounded-lg shadow border-b-4 border-blue-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4"><i class="fas fa-users fa-2x"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Total Autores</p>
+                            <p class="text-3xl font-bold text-gray-800" th:text="${totalAuthors}">0</p>
+                            <p class="text-xs text-gray-400 mt-0.5">encontrados en Wikidata</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- BNE -->
+                <div class="bg-white p-6 rounded-lg shadow border-b-4 border-red-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-red-100 text-red-500 mr-4"><i class="fas fa-book fa-2x"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">En BNE</p>
+                            <p class="text-3xl font-bold text-gray-800" th:text="${countBne}">0</p>
+                            <p class="text-xs text-gray-400"
+                                th:text="${totalAuthors > 0 ? #numbers.formatDecimal((countBne * 100.0) / totalAuthors, 1, 1) + '% enlazados' : '0%'}">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- BNF -->
+                <div class="bg-white p-6 rounded-lg shadow border-b-4 border-purple-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-500 mr-4"><i
+                                class="fas fa-globe-europe fa-2x"></i></div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">En BNF</p>
+                            <p class="text-3xl font-bold text-gray-800" th:text="${countBnf}">0</p>
+                            <p class="text-xs text-gray-400"
+                                th:text="${totalAuthors > 0 ? #numbers.formatDecimal((countBnf * 100.0) / totalAuthors, 1, 1) + '% enlazados' : '0%'}">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- BVMC -->
+                <div class="bg-white p-6 rounded-lg shadow border-b-4 border-orange-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-orange-100 text-orange-500 mr-4"><i
+                                class="fas fa-university fa-2x"></i></div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">En BVMC</p>
+                            <p class="text-3xl font-bold text-gray-800" th:text="${countBvmc}">0</p>
+                            <p class="text-xs text-gray-400"
+                                th:text="${totalAuthors > 0 ? #numbers.formatDecimal((countBvmc * 100.0) / totalAuthors, 1, 1) + '% enlazados' : '0%'}">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tiempo -->
+            <p class="text-center text-xs text-gray-400 mb-4">
+                <i class="fas fa-clock mr-1"></i>Consulta ejecutada en <span th:text="${totalTime}">0</span> ms
+            </p>
+
+            <!-- Acciones -->
+            <div class="flex flex-col md:flex-row justify-center space-y-3 md:space-y-0 md:space-x-4 mb-8">
+                <button onclick="toggleTable()" id="toggleBtn"
+                    class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-2 px-6 rounded shadow transition flex items-center justify-center gap-2">
+                    <i class="fas fa-list"></i> <span>Ver Tabla Detallada</span>
+                </button>
+                <button onclick="exportTableToCSV('calidad_autores.csv')"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow transition flex items-center justify-center gap-2">
+                    <i class="fas fa-file-csv"></i> Exportar CSV
+                </button>
+            </div>
+
+            <!-- Tabla -->
+            <div id="detailsTable" class="hidden bg-white shadow-xl rounded-lg overflow-hidden">
+                <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center flex-wrap gap-3">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700">Detalle de Enlazado por Autor</h3>
+                        <p class="text-xs text-gray-400">
+                            <i class="fas fa-check-circle text-green-500 mr-1"></i>Verde = tiene enlace en ese
+                            repositorio
+                            &nbsp;&nbsp;
+                            <i class="fas fa-times-circle text-red-500 mr-1"></i>Rojo = no tiene enlace
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs text-gray-500">Filtrar:</span>
+                        <button onclick="filterTable('all')"
+                            class="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded font-medium">Todos</button>
+                        <button onclick="filterTable('missing')"
+                            class="text-xs bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded font-medium">Solo
+                            con enlaces faltantes</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full leading-normal" id="authorTable">
+                        <thead>
+                            <tr>
+                                <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Autor (enlace Wikidata)
+                                </th>
+                                <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    BNE <span class="font-normal text-gray-400">(P950)</span>
+                                </th>
+                                <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    BNF <span class="font-normal text-gray-400">(P268)</span>
+                                </th>
+                                <th
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    BVMC <span class="font-normal text-gray-400">(P2799)</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="row : ${results}"
+                                class="hover:bg-gray-50 transition duration-150 border-b border-gray-200 author-row"
+                                th:data-missing="${(row['bne'] == null or row['bne'] == '') or (row['bnf'] == null or row['bnf'] == '') or (row['bvmc'] == null or row['bvmc'] == '')}">
+                                <td class="px-5 py-4 text-center text-sm">
+                                    <a th:href="${row['author']}" target="_blank"
+                                        class="text-blue-500 hover:underline text-xs" th:text="${row['author']}"></a>
+                                </td>
+                                <!-- BNE -->
+                                <td class="px-5 py-4 text-center text-sm">
+                                    <span th:if="${row['bne'] != null and row['bne'] != ''}"
+                                        class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
+                                        <span aria-hidden="true"
+                                            class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
+                                        <span class="relative text-green-700">
+                                            <i class="fas fa-check"></i>
+                                            <span class="hidden md:inline ml-1" th:text="${row['bne']}"></span>
+                                        </span>
+                                    </span>
+                                    <span th:unless="${row['bne'] != null and row['bne'] != ''}"
+                                        class="relative inline-block px-3 py-1 font-semibold text-red-900 leading-tight">
+                                        <span aria-hidden="true"
+                                            class="absolute inset-0 bg-red-200 opacity-50 rounded-full"></span>
+                                        <span class="relative text-red-700"><i class="fas fa-times"></i></span>
+                                    </span>
+                                </td>
+                                <!-- BNF -->
+                                <td class="px-5 py-4 text-center text-sm">
+                                    <span th:if="${row['bnf'] != null and row['bnf'] != ''}"
+                                        class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
+                                        <span aria-hidden="true"
+                                            class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
+                                        <span class="relative text-green-700">
+                                            <i class="fas fa-check"></i>
+                                            <span class="hidden md:inline ml-1" th:text="${row['bnf']}"></span>
+                                        </span>
+                                    </span>
+                                    <span th:unless="${row['bnf'] != null and row['bnf'] != ''}"
+                                        class="relative inline-block px-3 py-1 font-semibold text-red-900 leading-tight">
+                                        <span aria-hidden="true"
+                                            class="absolute inset-0 bg-red-200 opacity-50 rounded-full"></span>
+                                        <span class="relative text-red-700"><i class="fas fa-times"></i></span>
+                                    </span>
+                                </td>
+                                <!-- BVMC -->
+                                <td class="px-5 py-4 text-center text-sm">
+                                    <span th:if="${row['bvmc'] != null and row['bvmc'] != ''}"
+                                        class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
+                                        <span aria-hidden="true"
+                                            class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
+                                        <span class="relative text-green-700">
+                                            <i class="fas fa-check"></i>
+                                            <span class="hidden md:inline ml-1" th:text="${row['bvmc']}"></span>
+                                        </span>
+                                    </span>
+                                    <span th:unless="${row['bvmc'] != null and row['bvmc'] != ''}"
+                                        class="relative inline-block px-3 py-1 font-semibold text-red-900 leading-tight">
+                                        <span aria-hidden="true"
+                                            class="absolute inset-0 bg-red-200 opacity-50 rounded-full"></span>
+                                        <span class="relative text-red-700"><i class="fas fa-times"></i></span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">&copy; 2026 Biblio-API. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleCard(cardId) {
+            const cards = ['card-golden', 'card-silver', 'card-civil'];
+            cards.forEach(id => {
+                const el = document.getElementById(id);
+                const icon = document.getElementById('icon-' + id);
+                if (id === cardId) {
+                    if (el.classList.contains('hidden')) {
+                        el.classList.remove('hidden');
+                        icon.classList.add('rotate-180');
+                    } else {
+                        el.classList.add('hidden');
+                        icon.classList.remove('rotate-180');
+                    }
+                } else {
+                    el.classList.add('hidden');
+                    icon.classList.remove('rotate-180');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentPeriod = document.getElementById('currentPeriod')?.value || 'golden-age';
+            if (currentPeriod === 'silver-age') {
+                toggleCard('card-silver');
+            } else if (currentPeriod === 'civil-war') {
+                toggleCard('card-civil');
+            } else {
+                toggleCard('card-golden');
+            }
+        });
+
+        function toggleTable() {
+            var table = document.getElementById('detailsTable');
+            table.classList.toggle('hidden');
+            var btn = document.getElementById('toggleBtn');
+            if (table.classList.contains('hidden')) {
+                btn.innerHTML = '<i class="fas fa-list mr-2"></i> <span>Ver Tabla Detallada</span>';
+            } else {
+                btn.innerHTML = '<i class="fas fa-eye-slash mr-2"></i> <span>Ocultar Tabla</span>';
+            }
+        }
+
+        function filterTable(type) {
+            var rows = document.querySelectorAll('.author-row');
+            rows.forEach(row => {
+                if (type === 'all') {
+                    row.style.display = '';
+                } else if (type === 'missing') {
+                    row.style.display = row.getAttribute('data-missing') === 'true' ? '' : 'none';
+                }
+            });
+        }
+
+        function exportTableToCSV(filename) {
+            var csv = [];
+            var rows = document.querySelectorAll("#authorTable tr");
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].style.display === 'none') continue;
+                var row = [], cols = rows[i].querySelectorAll("td, th");
+                for (var j = 0; j < cols.length; j++) {
+                    var text = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").trim();
+                    text = text.replace(/"/g, '""');
+                    row.push('"' + text + '"');
+                }
+                csv.push(row.join(","));
+            }
+            downloadCSV(csv.join("\n"), filename);
+        }
+
+        function downloadCSV(csv, filename) {
+            var csvFile = new Blob([csv], { type: "text/csv" });
+            var downloadLink = document.createElement("a");
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+        }
+    </script>
+</body>
+
+</html>

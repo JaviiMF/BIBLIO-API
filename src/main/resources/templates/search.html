@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Búsqueda General - Biblio API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Multi-View Styles -->
+    <link rel="stylesheet" th:href="@{/css/search-views.css}">
+
+    <!-- Graph View Library -->
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet">
+
+    <!-- Leaflet Map Library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        .gradient-text {
+            background: linear-gradient(to right, #4f46e5, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .field-help {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            background: #f0f9ff;
+            border-left: 3px solid #06b6d4;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .field-help i {
+            color: #0891b2;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .field-help p {
+            color: #0e7490;
+            font-size: 0.8rem;
+            margin: 0;
+        }
+
+        .field-help strong {
+            color: #0c4a6e;
+        }
+
+        .repo-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-wrapper .tooltip-text {
+            visibility: hidden;
+            background: #1e293b;
+            color: white;
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 0;
+            min-width: 260px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .tooltip-wrapper:hover .tooltip-text {
+            visibility: visible;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.6rem;
+            height: 1.6rem;
+            background: #4f46e5;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <div th:replace="~{fragments/nav :: navbar}"></div>
+
+    <div class="container mx-auto mt-8 p-6 mb-24">
+
+        <!-- ===== HERO / DESCRIPCIÓN DE LA VISTA ===== -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold mb-3 font-sans tracking-tight">
+                <span class="gradient-text">Búsqueda General</span>
+            </h1>
+            <p class="text-gray-500 text-lg max-w-3xl mx-auto">
+                Consulta información sobre cualquier ámbito en los distintos repositorios bibliográficos sin la necesidad
+                de tener conocimientos técnicos sobre SPARQL
+            </p>
+        </div>
+
+        <!-- ===== CÓMO FUNCIONA (pasos) ===== -->
+        <div class="bg-white rounded-xl shadow-sm border border-blue-100 p-6 mb-8 max-w-4xl mx-auto">
+            <h2 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">
+                <i class="fas fa-info-circle text-indigo-400 mr-2"></i>¿Cómo funciona?
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="flex items-start gap-3">
+                    <span class="step-badge">1</span>
+                    <div>
+                        <p class="font-semibold text-gray-700 text-sm">Elige un repositorio</p>
+                        <p class="text-gray-500 text-xs mt-1">Selecciona la base de datos donde quieres buscar:
+                            Wikidata, BNE, BNF o la BVMC.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="step-badge">2</span>
+                    <div>
+                        <p class="font-semibold text-gray-700 text-sm">Escribe tu término de búsqueda</p>
+                        <p class="text-gray-500 text-xs mt-1">Introduce el nombre de un autor, una obra, un lugar...</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="step-badge">3</span>
+                    <div>
+                        <p class="font-semibold text-gray-700 text-sm">Explora los resultados</p>
+                        <p class="text-gray-500 text-xs mt-1">Visualiza los datos como tarjetas, grafo de relaciones,
+                            mapa o tabla.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ALERTAS ===== -->
+        <div th:if="${error}"
+            class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 max-w-4xl mx-auto"
+            role="alert">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <span class="block sm:inline" th:text="${error}">Error</span>
+        </div>
+        <div th:if="${success}"
+            class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 max-w-4xl mx-auto"
+            role="alert">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span class="block sm:inline" th:text="${success}">Éxito</span>
+        </div>
+
+        <!-- ===== FORMULARIO ===== -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-8 max-w-4xl mx-auto">
+            <h2 class="text-lg font-bold text-gray-700 mb-6 flex items-center gap-2">
+                <i class="fas fa-search text-indigo-500"></i> Configura tu búsqueda
+            </h2>
+            <form th:action="@{/search}" method="post" class="space-y-6">
+
+                <!-- REPOSITORIO -->
+                <div>
+                    <label for="repository" class="block text-gray-700 text-sm font-bold mb-1">
+                        Repositorio
+                        <span class="text-red-500 ml-1">*</span>
+                    </label>
+                    <select id="repository" name="repository" onchange="toggleLanguageSelector()"
+                        class="shadow border rounded-lg w-full py-2.5 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white">
+                        <option value="https://query.wikidata.org/sparql"
+                            th:selected="${selectedRepository == 'https://query.wikidata.org/sparql'}">Wikidata</option>
+                        <option value="https://data.cervantesvirtual.com/sparql"
+                            th:selected="${selectedRepository == 'https://data.cervantesvirtual.com/sparql'}">BVMC
+                            (Biblioteca Virtual Miguel de Cervantes)</option>
+                        <option value="https://datos.bne.es/sparql"
+                            th:selected="${selectedRepository == 'https://datos.bne.es/sparql'}">BNE (Biblioteca
+                            Nacional de España)</option>
+                        <option value="https://data.bnf.fr/sparql"
+                            th:selected="${selectedRepository == 'https://data.bnf.fr/sparql'}">BNF (Bibliothèque
+                            nationale de France)</option>
+                    </select>
+                    <div class="field-help flex items-center gap-4">
+                        <i class="fas fa-database fa-sm"></i>
+                        <p>
+                            Selecciona dónde quieres buscar.
+                            <strong>Wikidata</strong> es la opción más amplia (idiomas, imágenes, coordenadas) mientras que
+                            <strong>BNE/BNF/BVMC</strong> contienen datos bibliográficos especializados en literatura
+                            española y francesa.
+                        </p>
+                    </div>
+
+                    <!-- Chips informativos de cada repositorio -->
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <span class="repo-badge bg-blue-100 text-blue-700"><i class="fas fa-globe-americas mr-1"></i>
+                            Wikidata — cobertura global</span>
+                        <span class="repo-badge bg-yellow-100 text-yellow-800"><i class="fas fa-book mr-1"></i> BNE —
+                            literatura española</span>
+                        <span class="repo-badge bg-purple-100 text-purple-800"><i class="fas fa-flag mr-1"></i> BNF —
+                            literatura francesa</span>
+                        <span class="repo-badge bg-green-100 text-green-800"><i class="fas fa-scroll mr-1"></i> BVMC —
+                            literatura hispánica</span>
+                    </div>
+                </div>
+
+                <!-- TEMA -->
+                <div>
+                    <label for="topic" class="block text-gray-700 text-sm font-bold mb-1">
+                        Término de búsqueda
+                    </label>
+                    <input type="text" id="topic" name="topic" th:value="${topic}"
+                        class="shadow appearance-none border rounded-lg w-full py-2.5 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        placeholder='Ej: "Federico García Lorca", "Don Quijote", "poesía barroca"'>
+                    <div class="field-help flex items-center gap-4">
+                        <i class="fas fa-lightbulb fa-sm"></i>
+                        <p>
+                            Escribe el nombre de un <strong>autor, obra, género literario o cualquier entidad</strong>
+                            sobre la que quieras buscar información.La aplicación construirá automáticamente la consulta SPARQL al repositorio seleccionado.
+                            Déjalo vacío si prefieres escribir tu propia consulta SPARQL avanzada abajo.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- CONSULTA SPARQL PERSONALIZADA (avanzado, colapsable) -->
+                <div>
+                    <details class="group">
+                        <summary
+                            class="cursor-pointer flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800 select-none">
+                            <i class="fas fa-code"></i>
+                            <span>Consulta SPARQL personalizada <span class="font-normal text-gray-400">(opcional · para
+                                    usuarios avanzados)</span></span>
+                            <i
+                                class="fas fa-chevron-down text-xs ml-auto group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="mt-3">
+                            <textarea id="sparql" name="sparql" rows="6"
+                                class="shadow border rounded-lg w-full py-2.5 px-3 text-gray-700 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                placeholder="PREFIX wdt: &lt;http://www.wikidata.org/prop/direct/&gt;&#10;SELECT ?item ?label WHERE {&#10;  ...&#10;}"
+                                th:text="${sparql}"></textarea>
+                            <div class="field-help flex items-center gap-4">
+                                <i class="fas fa-code fa-sm"></i>
+                                <p>
+                                    Si conoces SPARQL, puedes escribir aquí tu propia consulta. Si rellenas este campo,
+                                    el <strong>"Término de búsqueda" se ignora</strong> y se ejecuta exactamente esta
+                                    consulta contra el repositorio seleccionado.
+                                </p>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- IDIOMA (solo for Wikidata) -->
+                <div id="language-container">
+                    <label for="language" class="block text-gray-700 text-sm font-bold mb-1">
+                        Idioma de los resultados
+                    </label>
+                    <select id="language" name="language"
+                        class="shadow border rounded-lg w-full py-2.5 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white">
+                        <option value="es" th:selected="${language == 'es'}">🇪🇸 Español (es)</option>
+                        <option value="en" th:selected="${language == 'en'}">🇬🇧 Inglés (en)</option>
+                        <option value="fr" th:selected="${language == 'fr'}">🇫🇷 Francés (fr)</option>
+                        <option value="de" th:selected="${language == 'de'}">🇩🇪 Alemán (de)</option>
+                        <option value="it" th:selected="${language == 'it'}">🇮🇹 Italiano (it)</option>
+                        <option value="pt" th:selected="${language == 'pt'}">🇵🇹 Portugués (pt)</option>
+                    </select>
+                    <div class="field-help flex items-center gap-4">
+                        <i class="fas fa-language fa-sm"></i>
+                        <p>
+                            Solo aplicable a <strong>Wikidata</strong>. Determina en qué idioma se devuelven las
+                            etiquetas y descripciones de las entidades encontradas. No filtra los resultados por idioma,
+                            solo cambia cómo se muestran los nombres.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- LÍMITE -->
+                <div>
+                    <label for="limit" class="block text-gray-700 text-sm font-bold mb-1">
+                        Límite de resultados
+                    </label>
+                    <input type="number" id="limit" name="limit" th:value="${limit}" min="1" max="500"
+                        class="shadow appearance-none border rounded-lg w-full py-2.5 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        placeholder="Por defecto: 20">
+                    <div class="field-help flex items-center gap-4">
+                        <i class="fas fa-sliders-h fa-sm"></i>
+                        <p>
+                            Número máximo de resultados que se devolverán. Un valor entre <strong>10 y 100</strong> es
+                            lo habitual.
+                            Los repositorios pueden tardar más si el límite es muy alto. Por defecto se usarán
+                            <strong>20 resultados</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- BOTÓN -->
+                <div class="flex items-center justify-end pt-2">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200 transform hover:scale-105 shadow-md">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ===== RESULTADOS ===== -->
+        <div th:if="${results != null}" class="mt-10 max-w-6xl mx-auto">
+
+            <!-- Hidden data for JavaScript -->
+            <script id="enriched-data" type="application/json" th:inline="javascript">
+                /*[[${enrichedData}]]*/
+            </script>
+
+            <!-- Cabecera resultados -->
+            <div
+                class="bg-white rounded-lg shadow border border-gray-100 p-4 mb-4 flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-table text-indigo-400 mr-2"></i>
+                        Resultados (<span th:text="${results.size()}">0</span>)
+                    </h3>
+                    <p class="text-xs text-gray-400 mt-0.5">Usa los botones de vista para explorar los datos de
+                        distintas formas</p>
+                </div>
+                <span th:if="${success}" class="text-green-600 text-sm font-medium" th:text="${success}"></span>
+            </div>
+
+            <!-- View Switcher con descripción -->
+            <div class="bg-white rounded-lg shadow border border-gray-100 p-3 mb-4">
+                <p class="text-xs text-gray-400 mb-2 px-1"><i class="fas fa-eye mr-1"></i> Modo de visualización:</p>
+                <div class="view-switcher">
+                    <button data-view="cards" class="active"
+                        title="Vista de tarjetas: cada resultado como una tarjeta visual">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Tarjetas
+                    </button>
+                    <button data-view="graph" title="Vista de grafo: relaciones entre entidades como red de nodos">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                        </svg>
+                        Grafo
+                    </button>
+                    <button data-view="map" title="Vista de mapa: muestra entidades con coordenadas geográficas">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                        </svg>
+                        Mapa
+                    </button>
+                    <button data-view="table" title="Vista de tabla: todos los datos en formato tabulado">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Tabla
+                    </button>
+                </div>
+            </div>
+
+            <!-- View Containers -->
+            <div id="cards-view" class="view-container active bg-white rounded-lg shadow-lg p-6"></div>
+            <div id="graph-view" class="view-container bg-white rounded-lg shadow-lg p-6">
+                <div id="graph-canvas"></div>
+            </div>
+            <div id="timeline-view" class="view-container bg-white rounded-lg shadow-lg p-6">
+                <div id="timeline-canvas"></div>
+            </div>
+            <div id="map-view" class="view-container bg-white rounded-lg shadow-lg p-6">
+                <div id="map-canvas"></div>
+            </div>
+            <div id="table-view" class="view-container"></div>
+
+            <!-- Query Info (Collapsible) -->
+            <div class="mt-4 bg-white rounded-lg shadow border border-gray-100 p-4">
+                <details>
+                    <summary
+                        class="font-semibold text-sm text-gray-600 cursor-pointer hover:text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-code text-indigo-400"></i>
+                        Ver la consulta SPARQL ejecutada
+                        <span class="text-xs font-normal text-gray-400 ml-1">(útil para aprender o depurar)</span>
+                    </summary>
+                    <pre class="bg-gray-100 p-4 rounded text-xs overflow-x-auto mt-3 text-gray-700"
+                        th:text="${executedQuery}"></pre>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleLanguageSelector() {
+            const repository = document.getElementById('repository').value;
+            const languageContainer = document.getElementById('language-container');
+            if (repository.includes('wikidata.org')) {
+                languageContainer.style.display = 'block';
+            } else {
+                languageContainer.style.display = 'none';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', toggleLanguageSelector);
+    </script>
+
+    <!-- Multi-View JavaScript Modules -->
+    <script th:src="@{/js/views/card-view.js}"></script>
+    <script th:src="@{/js/views/graph-view.js}"></script>
+    <script th:src="@{/js/views/map-view.js}"></script>
+    <script th:src="@{/js/views/table-view.js}"></script>
+    <script th:src="@{/js/search-views.js}"></script>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">
+                &copy; 2026 Biblio-API. Todos los derechos reservados.
+            </p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
