@@ -1,0 +1,84 @@
+# ============================================================
+# Maven
+# ============================================================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ============================================================
+# Spring Boot
+# ============================================================
+*.jar
+*.war
+*.ear
+*.nar
+
+# ============================================================
+# IDEs — IntelliJ IDEA
+# ============================================================
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# IDEs — Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# IDEs — VS Code
+.vscode/
+!.vscode/extensions.json
+
+# IDEs — NetBeans
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+build/
+
+# ============================================================
+# Sistema operativo
+# ============================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ============================================================
+# Logs
+# ============================================================
+*.log
+logs/
+spring.log
+
+# ============================================================
+# Variables de entorno y configuración sensible
+# ============================================================
+.env
+.env.local
+.env.*.local
+application-local.properties
+application-local.yml
+application-secret.properties
+application-secret.yml
+**/src/main/resources/application-prod.properties
+**/src/main/resources/application-prod.yml
+
+# ============================================================
+# Archivos de reportes grandes (generados automáticamente)
+# ============================================================
+repomix-output.md
+repomix-output.xml
