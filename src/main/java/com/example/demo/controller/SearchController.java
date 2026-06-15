@@ -75,6 +75,7 @@ public class SearchController {
 
         } catch (Exception e) {
             model.addAttribute("error", "Error ejecutando la consulta: " + e.getMessage());
+            busquedaService.saveBusqueda(topic, repository, queryToExecute, List.of(), startTime, startTime);
         }
 
         model.addAttribute("topic", topic);
@@ -125,6 +126,7 @@ public class SearchController {
         }
 
         String query;
+
         if ("silver-age".equals(period)) {
             query = sparqlService.getSilverAgeAuthorQualityQuery(countryQid);
         } else if ("civil-war".equals(period)) {
@@ -133,25 +135,30 @@ public class SearchController {
             query = sparqlService.getGoldenAgeAuthorQualityQuery(countryQid);
         }
 
-        List<Map<String, String>> results = sparqlService.executeSelectQuery(repository, query);
+        try {
+            List<Map<String, String>> results = sparqlService.executeSelectQuery(repository, query);
 
-        long endTime = System.currentTimeMillis();
+            long endTime = System.currentTimeMillis();
 
-        busquedaService.saveBusqueda(null, repository, query, results, endTime, startTime);
+            busquedaService.saveBusqueda(null, repository, query, results, endTime, startTime);
 
-        int totalAuthors = results.size();
-        long countBne = results.stream().filter(r -> r.get("bne") != null && !r.get("bne").isEmpty()).count();
-        long countBnf = results.stream().filter(r -> r.get("bnf") != null && !r.get("bnf").isEmpty()).count();
-        long countBvmc = results.stream().filter(r -> r.get("bvmc") != null && !r.get("bvmc").isEmpty()).count();
+            int totalAuthors = results.size();
+            long countBne = results.stream().filter(r -> r.get("bne") != null && !r.get("bne").isEmpty()).count();
+            long countBnf = results.stream().filter(r -> r.get("bnf") != null && !r.get("bnf").isEmpty()).count();
+            long countBvmc = results.stream().filter(r -> r.get("bvmc") != null && !r.get("bvmc").isEmpty()).count();
 
-        model.addAttribute("results", results);
-        model.addAttribute("country", country);
-        model.addAttribute("period", period);
-        model.addAttribute("totalAuthors", totalAuthors);
-        model.addAttribute("countBne", countBne);
-        model.addAttribute("countBnf", countBnf);
-        model.addAttribute("countBvmc", countBvmc);
-        model.addAttribute("totalTime", (endTime - startTime));
+            model.addAttribute("results", results);
+            model.addAttribute("country", country);
+            model.addAttribute("period", period);
+            model.addAttribute("totalAuthors", totalAuthors);
+            model.addAttribute("countBne", countBne);
+            model.addAttribute("countBnf", countBnf);
+            model.addAttribute("countBvmc", countBvmc);
+            model.addAttribute("totalTime", (endTime - startTime));
+        } catch (Exception e) {
+            model.addAttribute("error", "Error ejecutando la consulta: " + e.getMessage());
+            busquedaService.saveBusqueda(null, repository, query, List.of(), startTime, startTime);
+        }
 
         return "quality-comparative-search";
     }
@@ -177,6 +184,7 @@ public class SearchController {
 
             List<Map<String, String>> results = sparqlService.executeFederatedQuery(wikidataEntity.trim(),
                     targetRepository);
+            busquedaService.saveBusqueda(null, targetRepository, wikidataEntity, results, startTime, startTime);
 
             long endTime = System.currentTimeMillis();
 
@@ -200,7 +208,7 @@ public class SearchController {
 
         } catch (Exception e) {
             model.addAttribute("error", "Error en búsqueda federada: " + e.getMessage());
-            e.printStackTrace();
+            busquedaService.saveBusqueda(null, targetRepository, wikidataEntity, List.of(), startTime, startTime);
         }
 
         return "federated-search";
