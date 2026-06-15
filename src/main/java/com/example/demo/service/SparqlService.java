@@ -71,7 +71,6 @@ public class SparqlService {
       System.err.println("SPARQL Query Error:");
       System.err.println("Endpoint: " + endpointUrl);
       System.err.println("Query: " + sparqlQuery);
-      e.printStackTrace();
       throw new RuntimeException("Error executing SPARQL query: " + e.getMessage(), e);
     }
 

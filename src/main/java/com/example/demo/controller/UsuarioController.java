@@ -18,10 +18,10 @@ public class UsuarioController {
         this.usuarioRepository = usuarioRepository;
     }
 
-    @GetMapping("/empleados")
-    public String listarEmpleados(Model model) {
-        List<Usuario> empleados = usuarioRepository.findAll();
-        model.addAttribute("empleados", empleados);
+    @GetMapping("/usuarios")
+    public String listarUsuarios(Model model) {
+        List<Usuario> ususarios = usuarioRepository.findAll();
+        model.addAttribute("usuarios", ususarios);
         return "usuarios";
     }
 }

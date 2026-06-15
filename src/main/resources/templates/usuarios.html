@@ -17,7 +17,7 @@
 </head>
 <body>
 
-    <h1>Lista de Empleados</h1>
+    <h1>Lista de Usuarios</h1>
 
     <table>
         <thead>
@@ -31,15 +31,15 @@
             </tr>
         </thead>
         <tbody>
-            <tr th:each="empleado : ${empleados}">
-                <td th:text="${empleado.id}">1</td>
-                <td th:text="${empleado.username}">user1</td>
-                <td th:text="${empleado.nombre}">Nombre</td>
-                <td th:text="${empleado.apellido}">Apellido</td>
-                <td th:text="${empleado.email}">email@example.com</td>
+            <tr th:each="usuario : ${usuarios}">
+                <td th:text="${usuario.id}">1</td>
+                <td th:text="${usuario.username}">user1</td>
+                <td th:text="${usuario.nombre}">Nombre</td>
+                <td th:text="${usuario.apellido}">Apellido</td>
+                <td th:text="${usuario.email}">email@example.com</td>
                 <td>
-                    <span th:if="${empleado.activo}" class="active">Activo</span>
-                    <span th:unless="${empleado.activo}" class="inactive">Inactivo</span>
+                    <span th:if="${usuario.activo}" class="active">Activo</span>
+                    <span th:unless="${usuario.activo}" class="inactive">Inactivo</span>
                 </td>
             </tr>
         </tbody>
