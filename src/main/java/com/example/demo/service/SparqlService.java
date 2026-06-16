@@ -17,6 +17,10 @@ import java.util.Map;
 @Service
 public class SparqlService {
 
+  /**
+   * Metodo para omitir la validacion de certificados
+   * @return the httpclient
+   */
   private HttpClient createTrustingHttpClient() {
     try {
       TrustManager[] trustAllCerts = new TrustManager[] {
@@ -45,6 +49,12 @@ public class SparqlService {
     }
   }
 
+  /**
+   * Metodo con el que se ejecutan las consultas SPARQL
+   * @param endpointUrl the selected endpoint url
+   * @param sparqlQuery the query to execute
+   * @return the list with the results of the query
+   */
   public List<Map<String, String>> executeSelectQuery(String endpointUrl, String sparqlQuery) {
     List<Map<String, String>> resultsList = new ArrayList<>();
 
@@ -77,6 +87,14 @@ public class SparqlService {
     return resultsList;
   }
 
+  /**
+   * Metodo con el que se construye la consulta SPARQL dinamica para el modulo de busqueda general
+   * @param repository the repository
+   * @param language the language
+   * @param topic the topic
+   * @param limit the result limits
+   * @return the query to execute
+   */
   public String buildQueryFromTopic(String repository, String language, String topic, String limit) {
     if (repository.contains("wikidata")) {
       return """
@@ -129,6 +147,12 @@ public class SparqlService {
     }
   }
 
+  /**
+   * Metodo con el que se ejecuta la consulta SPARQL federada
+   * @param wikidataEntity the wikidata entity
+   * @param targetRepository the selected repository
+   * @return the list of results retrieved
+   */
   public List<Map<String, String>> executeFederatedQuery(String wikidataEntity, String targetRepository) {
     String targetQuery = "";
     String wikidataSparqlEndpoint = "https://query.wikidata.org/sparql";
@@ -151,6 +175,11 @@ public class SparqlService {
     }
   }
 
+  /**
+   * Metodo que devuelve la consulta SPARQL dinamica del siglo de oro
+   * @param countryQid the country selected
+   * @return the query to execute
+   */
   public String getGoldenAgeAuthorQualityQuery(String countryQid) {
     return """
           PREFIX wdt: <http://www.wikidata.org/prop/direct/>
@@ -185,6 +214,11 @@ public class SparqlService {
           """.formatted(countryQid);
   }
 
+  /**
+   * Metodo que devuelve la consulta SPARQL dinamica de la edad de plata
+   * @param countryQid the country selected
+   * @return the query to execute
+   */
   public String getSilverAgeAuthorQualityQuery(String countryQid) {
     return """
           PREFIX wdt: <http://www.wikidata.org/prop/direct/>
@@ -219,6 +253,11 @@ public class SparqlService {
           """.formatted(countryQid);
   }
 
+  /**
+   * Metodo que devuelve la consulta SPARQL dinamica de la guerra civil
+   * @param countryQid the country selected
+   * @return the query to execute
+   */
   public String getCivilWarAuthorQualityQuery(String countryQid) {
     return """
           PREFIX wdt: <http://www.wikidata.org/prop/direct/>
@@ -253,6 +292,11 @@ public class SparqlService {
           """.formatted(countryQid);
   }
 
+  /**
+   * Metodo que devuelve la consulta federada sobre la BNF
+   * @param wikidataQid the wikidata entity
+   * @return the query to execute
+   */
   public String getBnfFederatedQuery(String wikidataQid) {
     return """
         PREFIX dcterms: <http://purl.org/dc/terms/>
@@ -288,6 +332,11 @@ public class SparqlService {
         """.formatted(wikidataQid);
   }
 
+  /**
+   * Metodo que devuelve la consulta federada sobre la BVMC
+   * @param wikidataQid the wikidata entity
+   * @return the query to execute
+   */
   public String getBvmcFederatedQuery(String wikidataQid) {
     return """
         PREFIX rdaw: <http://rdaregistry.info/Elements/w/>

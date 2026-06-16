@@ -21,6 +21,15 @@ public class BusquedaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    /**
+     * Metodo para grabar la búsqueda en base de datos
+     * @param topic the topic
+     * @param repository the destiny repository
+     * @param queryToExecute the query to execute
+     * @param results the results retrieved
+     * @param endTime the time elapsed
+     * @param startTime the stating time
+     */
     public void saveBusqueda(String topic, String repository, String queryToExecute, List<Map<String, String>> results, long endTime, long startTime) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
