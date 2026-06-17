@@ -1,8 +1,3 @@
-/**
- * Graph View Implementation
- * Displays search results as an interactive network graph using vis.js
- */
-
 const GraphView = {
     container: null,
     network: null,
@@ -22,7 +17,6 @@ const GraphView = {
             return;
         }
 
-        // Prepare data for vis.js
         const nodes = new vis.DataSet(graphData.nodes.map(node => ({
             id: node.id,
             label: this.truncateLabel(node.label || node.id),
@@ -55,7 +49,6 @@ const GraphView = {
 
         const data = { nodes, edges };
 
-        // Network options
         const options = {
             nodes: {
                 borderWidth: 2,
@@ -107,10 +100,8 @@ const GraphView = {
             }
         };
 
-        // Create network
         this.network = new vis.Network(this.container, data, options);
 
-        // Event handlers
         this.network.on('click', (params) => {
             if (params.nodes.length > 0) {
                 const nodeId = params.nodes[0];
@@ -122,7 +113,6 @@ const GraphView = {
             this.network.setOptions({ physics: false });
         });
 
-        // Render legend
         this.renderLegend();
     },
 
@@ -141,7 +131,6 @@ const GraphView = {
     normalizeGroup(group) {
         if (!group) return 'unknown';
 
-        // 1. Si el grupo es una URL, nos quedamos con la última parte
         let g = group.toLowerCase().trim();
         if (g.includes('/') || g.includes('#')) {
             g = g.split(/[/#]/).pop();
@@ -192,7 +181,6 @@ const GraphView = {
         ) return 'topic';
 
         // --- AUTHOR / PERSON ---
-        // Eng, Spa, Fre, Deu, Ita, Por (Expanded)
         if (
            /\b(author|person|human|creator|writer|agent|performer|artist|contributor|illustrator|singer|composer|translator|conductor|director|man|woman|architect|politician|actor|actress|player|athlete|scientist|researcher|philosopher|monarch|king|queen|president|poet|painter|sculptor|photographer|journalist|historian|teacher|professor)\b/.test(g) ||
            /\b(autor|persona|humano|creador|escritor|agente|artista|colaborador|ilustrador|cantante|compositor|traductor|director|intérprete|hombre|mujer|ser humano|arquitecto|político|actor|actriz|jugador|atleta|científico|investigador|filósofo|monarca|rey|reina|presidente|poeta|pintor|escultor|fotógrafo|periodista|historiador|maestro|profesor)\b/.test(g) ||
@@ -203,7 +191,7 @@ const GraphView = {
            /q5|q482980|q215627|q36180|q33999|q1930187|q2526255|q484876|q205375|c1005/.test(g) // Q5: Human, Q33999: Actor
         ) return 'author';
 
-        // --- EVENT (Minor category, but useful) ---
+        // --- EVENT ---
         if (
            /\b(event|conference|exhibition|meeting|date|year|period|century|festival|workshop|concert|tournament|match|war|battle|election)\b/.test(g) ||
            /\b(evento|conferencia|exposición|reunión|fecha|año|periodo|siglo|festival|taller|concierto|torneo|partido|guerra|batalla|elección)\b/.test(g) ||
@@ -211,10 +199,9 @@ const GraphView = {
            /\b(ereignis|konferenz|ausstellung|treffen|datum|jahr|zeitraum|jahrhundert|festival|konzert|turnier|spiel|krieg|schlacht|wahl)\b/.test(g) ||
            /\b(evento|conferenza|esposizione|riunione|data|anno|periodo|secolo|festival|concerto|torneo|partita|guerra|battaglia|elezione)\b/.test(g) ||
            /\b(evento|conferência|exposição|reunião|data|ano|período|século|festival|concerto|torneio|jogo|guerra|batalha|eleição)\b/.test(g) ||
-           /q1190554|q1656682|q198|q178561/.test(g) // Q198: War
+           /q1190554|q1656682|q198|q178561/.test(g)
         ) return 'event';
 
-        // Log unknown types to help debugging
         console.warn('Unknown group/type encountered:', group);
         return 'unknown';
     },

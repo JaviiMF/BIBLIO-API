@@ -1,8 +1,3 @@
-/**
- * Table View Implementation
- * Enhanced table with sorting, filtering, and export capabilities
- */
-
 const TableView = {
     container: null,
     data: null,
@@ -26,11 +21,9 @@ const TableView = {
         const tableContainer = document.createElement('div');
         tableContainer.className = 'table-container';
 
-        // Controls
         const controls = this.createControls();
         tableContainer.appendChild(controls);
 
-        // Table
         const tableWrapper = document.createElement('div');
         tableWrapper.className = 'overflow-x-auto';
 
@@ -46,14 +39,12 @@ const TableView = {
         const controls = document.createElement('div');
         controls.className = 'table-controls';
 
-        // Search input
         const searchInput = document.createElement('input');
         searchInput.type = 'text';
         searchInput.className = 'table-search';
         searchInput.placeholder = 'Buscar en resultados...';
         searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
 
-        // Export button
         const exportBtn = document.createElement('button');
         exportBtn.className = 'table-export-btn';
         exportBtn.textContent = '📥 Exportar CSV';
@@ -71,7 +62,6 @@ const TableView = {
         const table = document.createElement('table');
         table.className = 'min-w-full leading-normal';
 
-        // Header
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
 
@@ -87,7 +77,6 @@ const TableView = {
         thead.appendChild(headerRow);
         table.appendChild(thead);
 
-        // Body
         const tbody = document.createElement('tbody');
         data.forEach(row => {
             const tr = document.createElement('tr');
@@ -99,7 +88,6 @@ const TableView = {
 
                 const value = row[col] || '';
 
-                // Check if value is a URL
                 if (value.startsWith('http')) {
                     const link = document.createElement('a');
                     link.href = value;
@@ -137,7 +125,6 @@ const TableView = {
             });
         }
 
-        // Re-render table
         const tableWrapper = this.container.querySelector('.overflow-x-auto');
         if (tableWrapper) {
             const newTable = this.createTable(this.filteredData);
@@ -164,7 +151,6 @@ const TableView = {
         this.container.dataset.sortColumn = column;
         this.container.dataset.sortOrder = isAscending ? 'desc' : 'asc';
 
-        // Re-render table
         const tableWrapper = this.container.querySelector('.overflow-x-auto');
         if (tableWrapper) {
             const newTable = this.createTable(this.filteredData);
@@ -178,13 +164,11 @@ const TableView = {
 
         const columns = Object.keys(this.filteredData[0]);
 
-        // Create CSV content
         let csv = columns.join(',') + '\n';
 
         this.filteredData.forEach(row => {
             const values = columns.map(col => {
                 const value = String(row[col] || '');
-                // Escape quotes and wrap in quotes if contains comma
                 return value.includes(',') || value.includes('"')
                     ? `"${value.replace(/"/g, '""')}"`
                     : value;

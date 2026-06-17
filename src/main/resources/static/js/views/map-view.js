@@ -1,8 +1,3 @@
-/**
- * Map View Component using Leaflet.js
- * Renders geographical coordinates on an interactive map
- */
-
 const MapView = {
     map: null,
     markers: [],
@@ -10,18 +5,9 @@ const MapView = {
     defaultCenter: [40.416775, -3.703790], // Madrid
     defaultZoom: 2,
 
-    /**
-     * Initialize map view
-     */
     init() {
-        // Map initialization is done on first render or when container is visible
-        // because Leaflet needs the container to have dimensions
     },
 
-    /**
-     * Render map view with data
-     * @param {Array} mapData - List of items with coordinates
-     */
     render(mapData) {
         const container = document.getElementById('map-canvas');
 
@@ -38,24 +24,19 @@ const MapView = {
             return;
         }
 
-        // Initialize map if not exists
         if (!this.map) {
             this.map = L.map('map-canvas').setView(this.defaultCenter, this.defaultZoom);
 
-            // Add OpenStreetMap tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(this.map);
 
             this.markersLayer = L.layerGroup().addTo(this.map);
         } else {
-            // Clear existing markers
             this.markersLayer.clearLayers();
-            // Force map to recalculate size (in case it was hidden)
             this.map.invalidateSize();
         }
 
-        // Add markers
         const bounds = L.latLngBounds();
         let validMarkers = 0;
 
@@ -63,7 +44,6 @@ const MapView = {
             if (item.lat && item.lng) {
                 const marker = L.marker([item.lat, item.lng]);
 
-                // Create popup content
                 const popupContent = `
                     <div class="map-popup">
                         <h3 class="map-popup-title">${item.title}</h3>
@@ -79,7 +59,6 @@ const MapView = {
             }
         });
 
-        // Fit map to bounds if markers exist
         if (validMarkers > 0) {
             this.map.fitBounds(bounds, { padding: [50, 50] });
         }

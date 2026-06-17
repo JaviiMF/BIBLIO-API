@@ -1,8 +1,3 @@
-/**
- * Main Search Views Controller
- * Manages view switching and initialization
- */
-
 const SearchViews = {
     currentView: 'cards',
     enrichedData: null,
@@ -30,7 +25,6 @@ const SearchViews = {
         buttons.forEach(button => {
             const viewName = button.getAttribute('data-view');
 
-            // Disable unavailable views
             if (!this.availableViews.includes(viewName)) {
                 button.classList.add('disabled');
                 button.disabled = true;
@@ -46,7 +40,6 @@ const SearchViews = {
     },
 
     initializeViews() {
-        // Initialize all view modules
         CardView.init();
         GraphView.init();
         MapView.init();
@@ -61,7 +54,6 @@ const SearchViews = {
 
         this.currentView = viewName;
 
-        // Update button states
         document.querySelectorAll('.view-switcher button').forEach(btn => {
             btn.classList.remove('active');
             if (btn.getAttribute('data-view') === viewName) {
@@ -69,18 +61,15 @@ const SearchViews = {
             }
         });
 
-        // Hide all view containers
         document.querySelectorAll('.view-container').forEach(container => {
             container.classList.remove('active');
         });
 
-        // Show selected view container
         const activeContainer = document.getElementById(`${viewName}-view`);
         if (activeContainer) {
             activeContainer.classList.add('active');
         }
 
-        // Render the view
         this.renderView(viewName);
     },
 
@@ -97,12 +86,11 @@ const SearchViews = {
                     TableView.render(this.enrichedData.rawData);
                     break;
                 case 'timeline':
+                    // TODO NOT IMPLEMENTED YET
                     // TimelineView.render(this.enrichedData.timelineData);
                     this.renderPlaceholder('timeline', 'Línea de Tiempo');
                     break;
                 case 'map':
-                    // MapView.render(this.enrichedData.mapData);
-                    // this.renderPlaceholder('map', 'Mapa');
                     MapView.render(this.enrichedData.mapData);
                     break;
                 default:
@@ -129,7 +117,6 @@ const SearchViews = {
     }
 };
 
-// Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     const enrichedDataElement = document.getElementById('enriched-data');
     if (enrichedDataElement) {
